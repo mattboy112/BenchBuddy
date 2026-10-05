@@ -1,12 +1,14 @@
 # BenchBuddy
 
+[![Discord: Printer's Paradise](https://img.shields.io/badge/Discord-Printer%27s%20Paradise-5865F2?logo=discord&logoColor=white)](https://discord.gg/TCZUpKpJy4)
+
 A wireless test bench for your ESP32-S3. Plug a sensor, LED, fan, servo or I2C module into the board, open a web page on your phone or PC, and poke at it: flip pins, run PWM, sweep servos, graph voltages, count pulses, and scan the I2C bus.
 
 The board hosts the page itself. No app, no cloud, no internet needed.
 
 https://github.com/user-attachments/assets/1289f94b-d72b-40f0-88ad-7cd40952af23
 
-> **Beta.** BenchBuddy is in beta. Found a bug or have an idea? [Open an issue](../../issues/new/choose) or post it in the BenchBuddy channel on Discord.
+> **Beta.** BenchBuddy is in beta. Bug reports, ideas and build help all go in **#bug-reports** on the **[Printer's Paradise Discord](https://discord.gg/TCZUpKpJy4)**. You can also [open an issue](../../issues/new/choose) here.
 
 - **Current version:** v1.1.0 ([what changed](CHANGELOG.md))
 - **Board:** ESP32-S3 DevKitC-1 style, **N16R8** module (16 MB flash, 8 MB PSRAM)
@@ -262,9 +264,20 @@ BenchBuddy has no login. Anyone on the same WiFi can open it, switch pins and fl
 
 ---
 
-## Reporting bugs
+## Bugs, ideas and help
 
-Use **[Issues → New issue → Bug report](../../issues/new/choose)**. The form asks for your firmware version, what you were doing, and a serial log if you have one. The more exact the steps, the faster it gets fixed.
+The BenchBuddy beta lives on Discord. Join **[Printer's Paradise](https://discord.gg/TCZUpKpJy4)** and post in **#bug-reports** (under the BenchBuddy Beta category). That's also the place to ask for help with a build or show off your setup. Printer's Paradise is a community for creators, 3D printers and engineers, so there's plenty more going on in there too.
+
+**[Join Printer's Paradise on Discord →](https://discord.gg/TCZUpKpJy4)**
+
+When you report a bug, include:
+
+- your firmware version (System tab, under device info)
+- what you were doing and what happened
+- the pins, modes and parts you had wired up
+- a serial log if you have one
+
+The more exact the steps, the faster it gets fixed. Prefer GitHub? **[Issues → New issue → Bug report](../../issues/new/choose)** works too.
 
 ---
 
