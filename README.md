@@ -233,7 +233,7 @@ Open `include/config.h`:
 |---|---|---|
 | `BB_DEFAULT_HOSTNAME` | `benchbuddy` | You run two bench units (also changeable on the WiFi screen) |
 | `BB_AP_PASSWORD` | `benchbuddy` | Always a good idea. 8+ characters. |
-| `BB_DEFAULT_WIFI_SSID` / `_PASS` | empty | You want to skip the WiFi setup screen. **Don't commit your real WiFi password** if you send a pull request. |
+| `BB_DEFAULT_WIFI_SSID` / `_PASS` | empty | You want to skip the WiFi setup screen. |
 | `BB_STATUS_LED_PIN` | `38` | Only the first-boot default. Easier to change under System → RGB status LED. |
 | `BB_I2C_DEFAULT_SDA` / `_SCL` | `8` / `9` | Your modules are wired elsewhere |
 
