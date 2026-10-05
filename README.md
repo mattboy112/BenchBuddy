@@ -4,9 +4,7 @@ A wireless test bench for your ESP32-S3. Plug a sensor, LED, fan, servo or I2C m
 
 The board hosts the page itself. No app, no cloud, no internet needed.
 
-![BenchBuddy in action](media/BenchBuddy_preview.gif)
-
-▶ **[Download the full video](https://github.com/mattboy112/BenchBuddy/raw/main/media/BenchBuddy_promo.mp4)** (1:32, 9 MB)
+https://github.com/user-attachments/assets/1289f94b-d72b-40f0-88ad-7cd40952af23
 
 > **Beta.** BenchBuddy is in beta. Found a bug or have an idea? [Open an issue](../../issues/new/choose) or post it in the BenchBuddy channel on Discord.
 
