@@ -7,6 +7,8 @@ body:
     attributes:
       value: |
         Thanks for testing BenchBuddy! The more exact you are, the faster this gets fixed.
+
+        Most beta reports go in **#bug-reports** on the [Printer's Paradise Discord](https://discord.gg/TCZUpKpJy4). Posting there works just as well as this form.
   - type: input
     id: version
     attributes:
