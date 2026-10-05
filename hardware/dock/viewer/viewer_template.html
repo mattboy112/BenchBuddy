@@ -1,0 +1,208 @@
+<title>BenchBuddy Dock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#0b0f13;--bg2:#121820;--line:#243039;--fg:#e3eaf0;--fg2:#93a3b1;--fg3:#5f6e7b;
+  --accent:#3fd0e0;--accent-soft:rgba(63,208,224,.14);
+  --ui:"Barlow Semi Condensed",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --num:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--ui);font-size:15px;overflow:hidden}
+.stage{position:fixed;inset:0;background:radial-gradient(120% 90% at 50% 20%,#16212b 0%,var(--bg) 70%)}
+#c{display:block;width:100%;height:100%;touch-action:none}
+.title{position:fixed;left:16px;top:calc(14px + env(safe-area-inset-top,0px));pointer-events:none;max-width:calc(100% - 32px)}
+.title h1{margin:0;font-weight:600;font-size:26px;letter-spacing:.01em}
+.title p{margin:4px 0 0;color:var(--fg2);font-size:14px}
+.bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:calc(100% - 32px)}
+.seg{display:flex;gap:2px;padding:3px;border-radius:10px;background:rgba(18,24,32,.88);border:1px solid var(--line);backdrop-filter:blur(8px)}
+.seg button{font:inherit;font-weight:600;font-size:13.5px;color:var(--fg2);background:transparent;border:0;border-radius:7px;padding:7px 12px;cursor:pointer;white-space:nowrap}
+.seg button:hover{color:var(--fg)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);box-shadow:inset 0 0 0 1px rgba(63,208,224,.45)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.spec{position:fixed;right:16px;top:calc(14px + env(safe-area-inset-top,0px));width:290px;background:rgba(18,24,32,.88);border:1px solid var(--line);border-radius:12px;padding:14px 16px;backdrop-filter:blur(8px);font-size:13.5px;line-height:1.45}
+.spec h2{margin:0 0 8px;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--fg2);font-weight:600}
+.spec dl{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;margin:0 0 12px}
+.spec dt{color:var(--fg2)}
+.spec dd{margin:0;text-align:right;font-family:var(--num);font-size:12.5px}
+.spec .key{display:flex;gap:12px;flex-wrap:wrap;color:var(--fg2);font-size:12.5px}
+.spec .key i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.loading{position:fixed;inset:0;display:grid;place-items:center;color:var(--fg2);font-family:var(--num);font-size:13px;pointer-events:none}
+@media (max-width:760px){
+  .spec{top:auto;bottom:calc(112px + env(safe-area-inset-bottom,0px));left:16px;right:16px;width:auto;padding:10px 12px}
+  .spec{font-size:12.5px}
+  .spec dl{gap:3px 10px;margin-bottom:8px}
+  .spec dd{font-size:11.5px}
+  .spec h2{display:none}
+  .title h1{font-size:22px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="stage"><canvas id="c" aria-label="3D model of the BenchBuddy dock"></canvas></div>
+<div class="title"><h1>BenchBuddy Dock</h1><p>Housing for the ESP32-S3 + GPIO extension board · drag to orbit, scroll to zoom</p></div>
+<aside class="spec" aria-label="Specs">
+  <h2>Print set</h2>
+  <dl>
+    <dt>Tray</dt><dd>87.6 × 87.6 × 10.7 mm</dd>
+    <dt>Tilt stand</dt><dd>80 × 90 × 28 mm</dd>
+    <dt>Tilt</dt><dd>15°</dd>
+    <dt>Screws</dt><dd>4 × M3 × 8</dd>
+    <dt>Material</dt><dd>PETG, no supports</dd>
+  </dl>
+  <div class="key"><span><i style="background:#2bb6c6"></i>Tray</span><span><i style="background:#3a424c"></i>Stand</span><span><i style="background:#111"></i>Board (reference)</span></div>
+</aside>
+<div class="loading" id="loading">Loading model…</div>
+<div class="bar">
+  <div class="seg" role="group" aria-label="Camera">
+    <button type="button" data-view="iso" aria-pressed="true">3/4</button>
+    <button type="button" data-view="front" aria-pressed="false">Front</button>
+    <button type="button" data-view="side" aria-pressed="false">Side</button>
+    <button type="button" data-view="top" aria-pressed="false">Top</button>
+  </div>
+  <div class="seg" role="group" aria-label="Show">
+    <button type="button" data-tog="board" aria-pressed="true">Board</button>
+    <button type="button" data-tog="stand" aria-pressed="true">Stand</button>
+    <button type="button" data-tog="explode" aria-pressed="false">Exploded</button>
+  </div>
+</div>
+
+<script id="meshes" type="application/json">/*MESHES*/</script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+<script>
+(function () {
+  "use strict";
+  const TILT = 15 * Math.PI / 180;
+  const canvas = document.getElementById("c");
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+  renderer.setClearColor(0x000000, 0);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(32, 1, 1, 4000);
+  const controls = new THREE.OrbitControls(camera, canvas);
+  controls.enableDamping = true;
+  controls.target.set(0, 14, -44);
+
+  scene.add(new THREE.HemisphereLight(0xdfefff, 0x101820, 0.9));
+  const key = new THREE.DirectionalLight(0xffffff, 0.75);
+  key.position.set(-120, 220, 160);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  Object.assign(key.shadow.camera, { left: -140, right: 140, top: 140, bottom: -140, near: 10, far: 600 });
+  scene.add(key);
+  const rim = new THREE.DirectionalLight(0x7fe3ee, 0.35);
+  rim.position.set(160, 80, -140);
+  scene.add(rim);
+
+  const floor = new THREE.Mesh(new THREE.CircleGeometry(260, 64), new THREE.ShadowMaterial({ opacity: 0.45 }));
+  floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
+  scene.add(floor);
+  const grid = new THREE.GridHelper(400, 40, 0x1f2a33, 0x141b22);
+  grid.position.y = 0.01;
+  scene.add(grid);
+
+  const root = new THREE.Group();
+  root.rotation.x = -Math.PI / 2;
+  scene.add(root);
+  const standG = new THREE.Group(), trayG = new THREE.Group(), boardG = new THREE.Group();
+  root.add(standG, trayG, boardG);
+
+  const mats = {
+    stand: new THREE.MeshStandardMaterial({ color: 0x3a424c, roughness: 0.62, metalness: 0.05 }),
+    tray: new THREE.MeshStandardMaterial({ color: 0x2bb6c6, roughness: 0.42, metalness: 0.0 }),
+    pcb: new THREE.MeshStandardMaterial({ color: 0x0d0f12, roughness: 0.5 }),
+    hdr_black: new THREE.MeshStandardMaterial({ color: 0x1a1a1c, roughness: 0.6 }),
+    hdr_red: new THREE.MeshStandardMaterial({ color: 0xd42a24, roughness: 0.55 }),
+    hdr_yellow: new THREE.MeshStandardMaterial({ color: 0xf2cc26, roughness: 0.5 }),
+    pins: new THREE.MeshStandardMaterial({ color: 0xd9b45a, roughness: 0.3, metalness: 0.8 }),
+    sockets: new THREE.MeshStandardMaterial({ color: 0x141416, roughness: 0.6 }),
+    devboard: new THREE.MeshStandardMaterial({ color: 0x0f1115, roughness: 0.45 }),
+    module: new THREE.MeshStandardMaterial({ color: 0xc4c8cc, roughness: 0.3, metalness: 0.75 }),
+    usb: new THREE.MeshStandardMaterial({ color: 0xcfd3d7, roughness: 0.25, metalness: 0.9 }),
+    jack: new THREE.MeshStandardMaterial({ color: 0x18181a, roughness: 0.55 }),
+    parts: new THREE.MeshStandardMaterial({ color: 0x4a4e54, roughness: 0.45, metalness: 0.3 })
+  };
+  const files = [["stand", standG], ["tray", trayG]].concat(
+    ["pcb", "hdr_black", "hdr_red", "hdr_yellow", "pins", "sockets", "devboard", "module", "usb", "jack", "parts"].map(k => [k, boardG]));
+  const loader = new THREE.STLLoader();
+  const data = JSON.parse(document.getElementById("meshes").textContent);
+  files.forEach(([name, group]) => {
+    const key = group === boardG ? "board_" + name : name;
+    const bin = atob(data[key]), buf = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+    const geo = loader.parse(buf.buffer);
+    geo.computeVertexNormals();
+    const m = new THREE.Mesh(geo, mats[name]);
+    m.castShadow = true; m.receiveShadow = true;
+    group.add(m);
+  });
+  document.getElementById("loading").hidden = true;
+
+  const n = new THREE.Vector3(0, -Math.sin(TILT), Math.cos(TILT));
+  let explode = 0, explodeTarget = 0;
+  function applyExplode() {
+    trayG.position.copy(n).multiplyScalar(explode * 34);
+    boardG.position.copy(n).multiplyScalar(explode * 64);
+  }
+
+  const views = {
+    iso: [[-170, 150, 170], [0, 14, -44]],
+    front: [[0, 60, 260], [0, 14, -44]],
+    side: [[300, 60, -44], [0, 14, -44]],
+    top: [[0, 330, -43.5], [0, 0, -44]]
+  };
+  let anim = null;
+  function setView(v, instant) {
+    currentView = v;
+    const [p, t] = views[v];
+    document.querySelectorAll("[data-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === v)));
+    const from = camera.position.clone(), fromT = controls.target.clone();
+    const toT = new THREE.Vector3(...t);
+    const k = camera.aspect < 0.8 ? 2.0 : camera.aspect < 1.2 ? 1.4 : 1;
+    const to = new THREE.Vector3(...p).sub(toT).multiplyScalar(k).add(toT);
+    if (instant || matchMedia("(prefers-reduced-motion: reduce)").matches) { camera.position.copy(to); controls.target.copy(toT); return; }
+    const t0 = performance.now();
+    anim = (now) => {
+      const k = Math.min(1, (now - t0) / 650), e = 1 - Math.pow(1 - k, 3);
+      camera.position.lerpVectors(from, to, e); controls.target.lerpVectors(fromT, toT, e);
+      if (k >= 1) anim = null;
+    };
+  }
+  document.querySelectorAll("[data-view]").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
+  document.querySelectorAll("[data-tog]").forEach(b => b.addEventListener("click", () => {
+    const on = b.getAttribute("aria-pressed") !== "true";
+    b.setAttribute("aria-pressed", String(on));
+    if (b.dataset.tog === "board") boardG.visible = on;
+    if (b.dataset.tog === "stand") standG.visible = on;
+    if (b.dataset.tog === "explode") explodeTarget = on ? 1 : 0;
+  }));
+
+  function resize() {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.fov = 32;
+    camera.updateProjectionMatrix();
+  }
+  let currentView = "iso";
+  window.addEventListener("resize", () => { resize(); setView(currentView, true); });
+  resize();
+  setView("iso", true);
+  (function loop(now) {
+    if (anim) anim(now);
+    if (Math.abs(explode - explodeTarget) > 0.001) { explode += (explodeTarget - explode) * 0.14; applyExplode(); }
+    controls.update();
+    renderer.render(scene, camera);
+    requestAnimationFrame(loop);
+  })(performance.now());
+})();
+</script>

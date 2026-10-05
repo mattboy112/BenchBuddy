@@ -1,0 +1,24 @@
+Copyright (c) 2026 Matthew Hauck. All rights reserved.
+
+BenchBuddy (the firmware, web interface, documentation and the BenchBuddy
+Dock CAD files in this repository) is not open source yet.
+
+You're welcome to:
+  - read the code and files in this repository
+  - build, flash and print BenchBuddy for your own personal use while
+    taking part in the beta
+  - suggest changes through issues and pull requests
+
+Please don't, without written permission:
+  - share, re-upload or redistribute these files or builds of them
+  - sell BenchBuddy units, kits, docks or anything made from these files
+  - publish modified versions
+
+A proper open license may come later. Ask in the BenchBuddy channel or open
+an issue if you want to do something not covered here.
+
+Third-party parts keep their own licenses:
+  - Fonts in web/fonts/ are under the SIL Open Font License 1.1
+    (see web/fonts/FONT_LICENSES.txt)
+  - Libraries that PlatformIO downloads at build time (ESPAsyncWebServer,
+    AsyncTCP, ArduinoJson, the ESP32 Arduino core) keep their own licenses

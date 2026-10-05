@@ -1,36 +1,51 @@
-# BenchBuddy v1.0.1
+# BenchBuddy
 
 A wireless test bench for your ESP32-S3. Plug a sensor, LED, fan, servo or I2C module into the board, open a web page on your phone or PC, and poke at it: flip pins, run PWM, sweep servos, graph voltages, count pulses, and scan the I2C bus.
 
 The board hosts the page itself. No app, no cloud, no internet needed.
 
-- **Board:** ESP32-S3 DevKitC-1 style, **N16R8** module (16 MB flash, 8 MB PSRAM), RGB LED on GPIO38
-- **Base:** works with the "ESP32_S3 GPIO Extension Board" (DC jack, 3-pin rows). See [Using the extension board](#using-the-extension-board).
+![BenchBuddy Dock](hardware/dock/renders/dock_3-4_view.png)
+
+> **Beta.** BenchBuddy is in private beta. Found a bug or have an idea? [Open an issue](../../issues/new/choose) or post it in the BenchBuddy channel on Discord.
+
+- **Current version:** v1.1.0 ([what changed](CHANGELOG.md))
+- **Board:** ESP32-S3 DevKitC-1 style, **N16R8** module (16 MB flash, 8 MB PSRAM)
+- **Base:** the "ESP32_S3 GPIO Extension Board" (DC jack, 3-pin rows). See [Using the extension board](#using-the-extension-board).
+- **Housing:** the 3D-printable [BenchBuddy Dock](hardware/dock/) (PETG, no supports)
 - **Built with:** PlatformIO, Arduino core 3.3.12 (pioarduino 55.03.312)
-- **Tested:** compiles with zero warnings; every screen tested in 3 themes at desktop and phone sizes; the pin engine was run against a 57-step test script
 
 ---
 
-## What's in v1
+## Parts list
+
+| Part | Notes |
+|---|---|
+| ESP32-S3 DevKitC-1 dev board, **N16R8** | Other S3 modules may work but aren't tested. The N16R8 layout is what the firmware is built for. |
+| ESP32-S3 GPIO extension board | The one with the DC barrel jack (6.5–9 V) and 3-pin GND / 3.3V / S rows |
+| 4 × M3 × 8 screws | Pan or button head. Not longer than 8 mm. |
+| USB-C data cable | For the first flash |
+| The printed [dock](hardware/dock/) | Optional, but it makes the bench a lot nicer to use |
+
+---
+
+## What it does
 
 | Tab | What it does |
 |---|---|
 | **Pins** | A map of the board. Tap a pin and set it to Off, Input, Output, PWM, Servo or Analog. Reserved pins explain why they're off-limits. |
 | **Scope** | Live voltage graph, up to 4 channels, 10–200 samples per second, with min/max/average and CSV export. Input and output pins show as logic traces underneath. |
-| **I2C** | Bus scanner with a classic address map, wiring health check (pull-ups, stuck lines, auto-recovery), a "probably this chip" guess for 50+ common modules across 48 addresses, and a register read/write tool. |
-| **System** | WiFi setup, firmware updates over WiFi, failsafe switch, device info, and the theme picker. |
+| **I2C** | Bus scanner with a classic address map, wiring health check (pull-ups, stuck lines, auto-recovery), a "probably this chip" guess for 50+ common modules, and a register read/write tool. |
+| **System** | WiFi setup, saved setups, firmware updates over WiFi, failsafe switch, device info, and the theme picker. |
 
-**Three themes** (switch anytime, top right or System → Appearance):
+Always in the top bar:
 
-- **Lab Instrument:** dark slate with scope-style channel colors
-- **Clean Studio:** bright and calm for daylight benches
-- **Cyberdeck:** amber terminal glow with sharp corners
-
-The red **All off** button is on every screen and turns every output off instantly.
+- **All off** (red): turns every output off instantly. Use Suspend instead if you want to keep the setup.
+- **Suspend / Resume**: pauses every output but keeps the setup, so Resume picks up right where you left off.
+- **Theme switch**: Lab Instrument (dark slate, scope colors), Clean Studio (bright), Cyberdeck (amber terminal).
 
 ---
 
-## Folder layout
+## Repo layout
 
 ```
 BenchBuddy/
@@ -38,46 +53,50 @@ BenchBuddy/
 ├─ include/config.h      Settings you might change (names, hotspot password, LED pin)
 ├─ src/                  Firmware
 │  ├─ main.cpp           Main loop and command handling
-│  ├─ pins.cpp           Pin engine: input/output/PWM/servo/analog/pulse counters
+│  ├─ pins.cpp           Pin engine: input/output/PWM/servo/analog/pulse counters, suspend
+│  ├─ configs.cpp        Saved setups (stored on the board)
 │  ├─ i2c_tools.cpp      I2C scan, bus health check, register read/write
 │  ├─ net.cpp            WiFi, hotspot fallback, captive portal, mDNS
-│  ├─ web.cpp            Web server, WebSocket, firmware updates
-│  ├─ status_led.cpp     Onboard RGB LED colors
-│  └─ web_assets.h       The web page, packed automatically from web/ (don't edit)
+│  ├─ web.cpp            Web server, WebSocket, firmware updates, config import
+│  └─ status_led.cpp     Onboard RGB LED colors
 ├─ web/index.html        The whole web interface (edit this one)
-├─ web/fonts/            The 10 fonts the themes use (open-source, OFL)
+├─ web/fonts/            The fonts the themes use (open-source, OFL)
 ├─ scripts/embed_web.py  Packs web/ into src/web_assets.h on every build
-├─ firmware/             Ready-to-flash builds (no compiling needed)
-└─ docs/PROTOCOL.md      Every message the page and board send each other
+├─ hardware/dock/        The 3D-printable dock: CadQuery source, STL/3MF/STEP, renders, 3D viewer
+├─ docs/PROTOCOL.md      Messages the page and board send each other
+└─ CHANGELOG.md          What changed in each version
 ```
+
+Ready-to-flash firmware isn't stored in the repo. It's attached to each version on the **[Releases](../../releases)** page.
 
 ---
 
 ## Flash it
 
-You have two options. Option A is fastest. Option B is what you'll use once you start changing code.
-
 ### Option A: flash the ready-made file (no compiling)
 
-1. Plug the board into your PC with a data USB cable.
-2. Open the Spacehuhn ESP Web Tool (`esp.huhn.me`) in Chrome or Edge, click **Connect** and pick the board's COM port.
-3. Choose `firmware/BenchBuddy-v1.0.1-factory.bin` and set the address to **0x0**.
-4. Click **Program**. When it finishes, press the board's **RST** button.
+1. Download `BenchBuddy-v1.1.0-factory.bin` from the **[latest release](../../releases/latest)**.
+2. Plug the board into your PC with a data USB cable.
+3. Open the Spacehuhn ESP Web Tool (`esp.huhn.me`) in Chrome or Edge, click **Connect** and pick the board's COM port.
+4. Choose the `factory.bin` file and set the address to **0x0**.
+5. Click **Program**. When it finishes, press the board's **RST** button.
 
 Or from a terminal with esptool:
 
 ```
-esptool --chip esp32s3 write-flash 0x0 firmware/BenchBuddy-v1.0.1-factory.bin
+esptool --chip esp32s3 write-flash 0x0 BenchBuddy-v1.1.0-factory.bin
 ```
 
-> **Factory vs OTA file:** the `factory.bin` holds everything (bootloader, partition table, app) and goes to address 0x0 over USB. The `ota.bin` is only the app. Use that one in **System → Firmware update** once BenchBuddy is already running.
+> **Factory vs OTA file:** the `factory.bin` holds everything (bootloader, partition table, app) and goes to address 0x0 over USB. The `ota.bin` is only the app. Use that one in **System → Firmware update** once BenchBuddy is already running. Each release also has a `SHA256SUMS` file if you want to check your download.
 
 ### Option B: build and upload with PlatformIO
 
-1. Open VS Code with the PlatformIO extension (you already have `.platformio` set up).
-2. **File → Open Folder** and pick this `BenchBuddy` folder.
+1. Install VS Code and the PlatformIO extension.
+2. Clone this repo (or download it as a ZIP), then **File → Open Folder** and pick the `BenchBuddy` folder.
 3. Plug in the board and click the **→ Upload** arrow in the bottom bar. The first build downloads the ESP32 toolchain (a few hundred MB), so give it a few minutes.
 4. Click the **plug icon (Serial Monitor)**. You'll see the board start up and print its address.
+
+The web page is packed into the firmware automatically on every build (`scripts/embed_web.py`), so just edit `web/index.html` and upload.
 
 **If the upload won't start:** hold **BOOT**, tap **RST**, let go of **BOOT**, then upload again. That forces the chip into flash mode.
 
@@ -108,7 +127,7 @@ If `benchbuddy.local` doesn't load (some Android phones don't support `.local` n
 | Blinking white | Firmware update in progress |
 | Blinking red | Failsafe turned the outputs off |
 
-The LED is on **GPIO38** to match your board's pinout (`RGB_LED`). If it stays dark after flashing, your board uses GPIO48: change it under **System → RGB status LED**. No reflashing needed.
+The LED defaults to **GPIO38** (boards marked `RGB_LED` on GPIO38). If it stays dark after flashing, your board probably uses GPIO48: change it under **System → RGB status LED**. No reflashing needed.
 
 ---
 
@@ -142,8 +161,10 @@ While the bus is on, its two pins are locked. **Release pins** frees them.
 
 ### System
 
+- **Setups & configs:** name the current setup and hit **Save current** to store it on the board (up to 6, they survive a power-cycle). Each saved setup has **Load**, **Export** and **Delete** buttons. **Export current** downloads the live setup as a `.json` file you can share, and **Import a file** applies someone else's.
+- **Suspend / Resume:** also here, same as the top-bar button.
 - **Failsafe:** when on, every output turns off if no browser has been connected for 10 seconds. Turn it on for motors and heaters.
-- **Firmware update:** pick `firmware.bin` (or `firmware/BenchBuddy-…-ota.bin`) and flash it over WiFi. Outputs switch off during the update, and if the upload breaks, the board keeps its old firmware.
+- **Firmware update:** pick the release's `ota.bin` and flash it over WiFi. Outputs switch off during the update, and if the upload breaks, the board keeps its old firmware.
 - **RGB status LED:** which pin drives the onboard LED (GPIO 38, GPIO 48 or none). The board restarts to apply it, and the unused pin becomes a bench pin.
 - **Restart** and **Forget WiFi** ask you to tap twice so you can't hit them by accident.
 
@@ -194,7 +215,7 @@ The ESP32's ADC is good for "is it about right" readings (within a few percent),
 
 ## Using the extension board
 
-Your "ESP32_S3 GPIO Extension Board" breaks every pin out into 3-pin rows plus separate power headers.
+The "ESP32_S3 GPIO Extension Board" breaks every pin out into 3-pin rows plus separate power headers.
 
 - **3-pin rows are GND / 3.3V / S.** S is the GPIO signal. The middle pin is **3.3 V**, so it's right for sensors and modules, but **not** for servos, fans or anything with a motor.
 - **Servos:** signal to the row's **S** pin, servo power from the **5V output pins** block, ground from any GND.
@@ -212,7 +233,7 @@ Open `include/config.h`:
 |---|---|---|
 | `BB_DEFAULT_HOSTNAME` | `benchbuddy` | You run two bench units (also changeable on the WiFi screen) |
 | `BB_AP_PASSWORD` | `benchbuddy` | Always a good idea. 8+ characters. |
-| `BB_DEFAULT_WIFI_SSID` / `_PASS` | empty | You want to skip the WiFi setup screen |
+| `BB_DEFAULT_WIFI_SSID` / `_PASS` | empty | You want to skip the WiFi setup screen. **Don't commit your real WiFi password** if you send a pull request. |
 | `BB_STATUS_LED_PIN` | `38` | Only the first-boot default. Easier to change under System → RGB status LED. |
 | `BB_I2C_DEFAULT_SDA` / `_SCL` | `8` / `9` | Your modules are wired elsewhere |
 
@@ -222,7 +243,7 @@ Rebuild and upload after changing these.
 
 ## Security note
 
-BenchBuddy has no login. Anyone on the same WiFi can open it, switch pins and flash firmware. That's fine on your home network, but don't port-forward it to the internet, and change the hotspot password in `config.h`. A PIN lock is on the v2 list.
+BenchBuddy has no login. Anyone on the same WiFi can open it, switch pins and flash firmware. That's fine on your home network, but don't port-forward it to the internet, and change the hotspot password in `config.h`. A PIN lock is on the roadmap.
 
 ---
 
@@ -240,14 +261,26 @@ BenchBuddy has no login. Anyone on the same WiFi can open it, switch pins and fl
 
 ---
 
-## What's next
+## Reporting bugs
 
-- **v2:** serial bridge (talk to GPS modules or another ESP32 through the page), SPI chip-ID checks for the nRF24L01+ and CC1101, PIN lock
-- **v3:** INA219/INA226 current monitoring with auto power cutoff, logic analyzer with PulseView export
-
-To add a feature, `docs/PROTOCOL.md` lists every message the page and board exchange.
+Use **[Issues → New issue → Bug report](../../issues/new/choose)**. The form asks for your firmware version, what you were doing, and a serial log if you have one. The more exact the steps, the faster it gets fixed.
 
 ---
+
+## Roadmap
+
+- A screen on the unit itself
+- Serial bridge (talk to GPS modules or another ESP32 through the page)
+- SPI chip-ID checks for the nRF24L01+ and CC1101
+- PIN lock for the web page
+- INA219/INA226 current monitoring with auto power cutoff
+- Logic analyzer with PulseView export
+
+---
+
+## License
+
+Not open source yet: all rights reserved. Beta testers can build and use it for themselves. See [LICENSE](LICENSE) for the details.
 
 ## Credits
 

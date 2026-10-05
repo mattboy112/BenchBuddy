@@ -1,0 +1,73 @@
+name: Bug report
+description: Something on BenchBuddy isn't working right
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing BenchBuddy! The more exact you are, the faster this gets fixed.
+  - type: input
+    id: version
+    attributes:
+      label: Firmware version
+      description: Shown on the System tab under device info (for example 1.1.0)
+      placeholder: "1.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where did it happen?
+      options:
+        - Pins tab
+        - Scope tab
+        - I2C tab
+        - System tab (WiFi, setups, firmware update, failsafe)
+        - Suspend / Resume / All off
+        - WiFi or hotspot connection
+        - Flashing / first start
+        - The printed dock
+        - Somewhere else
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you see, and what did you expect to see instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to make it happen
+      description: Step by step, including which pins and modes you used and what was wired up
+      placeholder: |
+        1. Set GPIO 5 to PWM at 25 kHz
+        2. Dragged duty to 100%
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: hardware
+    attributes:
+      label: Board and hardware
+      description: Dev board, extension board, and what was plugged in
+      placeholder: "ESP32-S3 N16R8 DevKitC-1 + GPIO extension board, Noctua 4-pin fan on 12 V"
+  - type: input
+    id: browser
+    attributes:
+      label: Phone/PC and browser
+      placeholder: "Pixel 8, Chrome / Windows 11, Edge"
+  - type: textarea
+    id: log
+    attributes:
+      label: Serial log (if you have one)
+      description: Paste anything from the serial monitor around when it happened
+      render: text
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots or anything else
+      description: Drag images or short videos in here

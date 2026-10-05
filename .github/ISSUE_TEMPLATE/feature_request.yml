@@ -1,0 +1,21 @@
+name: Feature idea
+description: Something you'd like BenchBuddy to do
+title: "[Idea] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like it to do?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: What would you use it for?
+      description: The part or project you'd be testing, so the feature fits real use
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Sketches, links to modules or datasheets, screenshots

@@ -1,0 +1,10 @@
+* text=auto
+
+*.woff2 binary
+*.png   binary
+*.jpg   binary
+*.3mf   binary
+*.stl   binary
+*.bin   binary
+*.step  -diff
+hardware/dock/viewer/BenchBuddy_Dock_viewer.html -diff

@@ -1,5 +1,27 @@
+# PlatformIO / VS Code
 .pio/
 .vscode/.browse.c_cpp.db*
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+
+# Generated from web/ by scripts/embed_web.py on every build
+src/web_assets.h
+
+# Firmware builds are published on the GitHub Releases page, not in the repo
+firmware/
+*.bin
+
+# Python
+__pycache__/
+*.pyc
+
+# Local-only files in Matt's working folder (not part of the repo)
+*.zip
+*.mp4
+Claude outputs/
+promo/
+BenchBuddy-v1.0.1/
+BenchBuddy-Dock-housing/
+DOWNLOADS_INDEX.md
+_to_delete/
