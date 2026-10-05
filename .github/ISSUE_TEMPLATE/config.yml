@@ -1,1 +1,5 @@
 blank_issues_enabled: true
+contact_links:
+  - name: Report it on Discord (Printer's Paradise)
+    url: https://discord.gg/TCZUpKpJy4
+    about: The BenchBuddy beta lives in #bug-reports on the Printer's Paradise Discord. Bugs, ideas and build help all go there.
