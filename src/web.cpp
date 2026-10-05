@@ -10,6 +10,7 @@
 #include <atomic>
 
 #include "config.h"
+#include "configs.h"
 #include "log.h"
 #include "net.h"
 #include "pins.h"
@@ -27,6 +28,9 @@ std::atomic<uint32_t> gOtaLastMs{0};
 std::atomic<uint32_t> gRebootAt{0};
 bool gOtaDone = false;
 String gOtaErr;
+String gPendingImport;
+String gPendingImportName;
+std::atomic<bool> gImportReady{false};
 uint32_t gSketchSize = 0;
 
 constexpr uint32_t kOtaStallMs = 30000;
@@ -229,6 +233,34 @@ void webBegin() {
     webScheduleReboot(800);
   });
 
+  gServer.on(AsyncURIMatcher::exact("/api/config/get"), HTTP_GET, [](AsyncWebServerRequest *req) {
+    String name = req->hasParam("name") ? req->getParam("name")->value() : String();
+    String json;
+    if (!cfgGet(name, json)) {
+      req->send(404, "application/json", "{\"ok\":false,\"err\":\"No config by that name\"}");
+      return;
+    }
+    AsyncWebServerResponse *r = req->beginResponse(200, "application/json", json);
+    r->addHeader("Cache-Control", "no-store");
+    req->send(r);
+  });
+
+  gServer.on(AsyncURIMatcher::exact("/api/config/import"), HTTP_POST, [](AsyncWebServerRequest *req) {
+    String cfg = param(req, "cfg");
+    if (cfg.isEmpty()) {
+      sendResult(req, false, "No config data was sent.");
+      return;
+    }
+    if (cfg.length() > 3000) {
+      sendResult(req, false, "That config file is too large.");
+      return;
+    }
+    gPendingImport = cfg;
+    gPendingImportName = param(req, "name");
+    gImportReady = true;
+    sendResult(req, true);
+  });
+
   gServer.on(AsyncURIMatcher::exact("/api/update"), HTTP_POST, onUpdateDone, onUpdateChunk);
 
   gServer.onNotFound([](AsyncWebServerRequest *req) {
@@ -247,6 +279,15 @@ void webBegin() {
 }
 
 bool webNextCommand(WsCommand &out) { return gQueue && xQueueReceive(gQueue, &out, 0) == pdTRUE; }
+
+bool webTakePendingImport(String &cfg, String &name) {
+  if (!gImportReady.exchange(false)) return false;
+  cfg = gPendingImport;
+  name = gPendingImportName;
+  gPendingImport = "";
+  gPendingImportName = "";
+  return true;
+}
 
 void webSendTo(uint32_t client, const String &msg) { gWs.text(client, msg); }
 

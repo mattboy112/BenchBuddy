@@ -22,6 +22,13 @@ bool pinsIsUserPin(uint8_t gpio);
 bool pinsClaim(uint8_t gpio, Owner owner, String &err);
 void pinsRelease(uint8_t gpio, Owner owner);
 
+void pinsConfigJson(JsonObject out);
+bool pinsApplyConfig(JsonObjectConst cfg, String &err);
+void pinsSuspend();
+bool pinsResume(String &err);
+bool pinsSuspended();
+void pinsCancelSuspend();
+
 void pinsCatalogJson(JsonObject out);
 void pinsStateJson(JsonArray out);
 void pinsLiveJson(JsonObject out);

@@ -1,6 +1,6 @@
 #pragma once
 
-#define BB_FW_VERSION "1.0.1"
+#define BB_FW_VERSION "1.1.0"
 
 // Name on your network: http://benchbuddy.local
 #define BB_DEFAULT_HOSTNAME "benchbuddy"

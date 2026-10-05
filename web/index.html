@@ -440,6 +440,12 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
+.btn.js-suspend.on{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+.susp-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:2px 0 8px;padding:9px 14px;border-radius:var(--r);background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 50%,transparent);font-size:13.5px}
+.susp-bar b{color:var(--accent)}
+.cfg-list{display:flex;flex-direction:column;gap:8px}
+.cfg-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border:1px solid var(--line2);border-radius:var(--r-sm);flex-wrap:wrap}
+.cfg-name{font-weight:600;word-break:break-word;min-width:0}
 </style>
 <script>
 (function(){var s=null;try{s=localStorage.getItem("bb-skin")}catch(e){}
@@ -478,11 +484,15 @@ document.documentElement.setAttribute("data-skin",s)})();
     <button class="skin-btn" type="button" data-skin="studio" title="Clean Studio" aria-label="Clean Studio theme"><span class="sw-studio"></span></button>
     <button class="skin-btn" type="button" data-skin="deck" title="Cyberdeck" aria-label="Cyberdeck theme"><span class="sw-deck"></span></button>
   </div>
+  <button class="btn sm js-suspend" type="button" id="suspendBtn" title="Pause all outputs but keep your setup">Suspend</button>
   <button class="kill" type="button" id="killBtn" title="Turn every output off right now"><svg aria-hidden="true"><use href="#i-power"/></svg><span>All off</span></button>
 </header>
 
 <div class="demo-bar" id="demoBar" hidden>
   <b>Demo mode</b><span>This is a simulated board so you can try every screen. Flash BenchBuddy to an ESP32-S3 to drive real pins.</span>
+</div>
+<div class="susp-bar" id="suspBar" hidden>
+  <b>Suspended</b><span>Outputs are paused and your setup is held — hit Resume to pick up where you left off.</span>
 </div>
 
 <nav class="tabs" role="tablist" aria-label="Sections">
@@ -633,6 +643,22 @@ document.documentElement.setAttribute("data-skin",s)})();
       </div>
     </div>
     <div class="panel span2">
+      <div class="panel-h"><h2>Setups &amp; configs</h2><span class="spacer"></span><button class="btn sm js-suspend" type="button" id="suspendBtn2" title="Pause all outputs but keep your setup">Suspend</button></div>
+      <div class="panel-b stack">
+        <p class="hint"><b>Suspend</b> pauses every output but keeps your whole setup, so <b>Resume</b> picks up right where you left off. Save a setup to recall it after a power-cycle, or export it to share as a file.</p>
+        <div class="row" style="flex-wrap:wrap">
+          <input class="input" id="cfgName" placeholder="Name this setup" maxlength="24" autocomplete="off" spellcheck="false" style="max-width:220px">
+          <button class="btn primary" type="button" id="cfgSaveBtn">Save current</button>
+          <button class="btn" type="button" id="cfgExportBtn">Export current</button>
+        </div>
+        <div class="cfg-list" id="cfgList"></div>
+        <div class="row" style="flex-wrap:wrap">
+          <input class="input" type="file" id="cfgFile" accept=".json,application/json">
+          <button class="btn" type="button" id="cfgImportBtn">Import a file</button>
+        </div>
+      </div>
+    </div>
+    <div class="panel span2">
       <div class="panel-h"><h2>WiFi setup</h2><span class="spacer"></span><button class="btn sm" type="button" id="wifiScanBtn"><svg aria-hidden="true"><use href="#i-scan"/></svg>Scan</button></div>
       <div class="panel-b stack">
         <div class="net-list" id="netList"><div class="empty" style="padding:16px">Press Scan to find networks nearby.</div></div>
@@ -694,6 +720,7 @@ window.BenchSim = function BenchSim(emit, opts) {
   }
   boot();
   let rate = 50, failsafe = false, sampleAcc = 0, fanRpm = 0, lastTick = now();
+  let suspended = false, suspendSnap = null; const configs = new Map();
   let wifiScan = {state:"idle", nets:[]};
   const regs = {0x68:{0x75:0x68,0x6B:0x40,0x1A:0x00,0x1B:0x00,0x1C:0x00}, 0x76:{0xD0:0x60,0xF4:0x00,0xF5:0x00,0xE0:0x00}, 0x3C:{}};
   const label = {off:"Off",in:"Input",out:"Output",pwm:"PWM",servo:"Servo",adc:"Analog"};
@@ -724,7 +751,7 @@ window.BenchSim = function BenchSim(emit, opts) {
     return o;
   }
   function state() {
-    return {t:"state", pins:[...pins.values()].filter(p => p.mode !== "off" || p.owner !== "user").map(pinState), i2c:{...i2c}, rate, fs:failsafe};
+    return {t:"state", pins:[...pins.values()].filter(p => p.mode !== "off" || p.owner !== "user").map(pinState), i2c:{...i2c}, rate, fs:failsafe, susp:suspended, cfgs:[...configs.keys()]};
   }
   function sys() {
     return {t:"sys", up:now(), heap:281000 + Math.round(Math.random() * 6000), heapMin:251344, heapSize:368640, psramFree:8247300,
@@ -886,6 +913,13 @@ window.BenchSim = function BenchSim(emit, opts) {
     }
     emit(live);
   }
+  function cfgNow() { return {pins:[...pins.values()].filter(p => p.owner === "user" && p.mode !== "off").map(pinState), rate}; }
+  function applyCfg(cfg) {
+    for (const p of pins.values()) if (p.owner === "user" && p.mode !== "off") release(p);
+    suspended = false; suspendSnap = null;
+    (cfg.pins || []).forEach(e => pinCmd(e));
+    if (cfg.rate && RATES.includes(cfg.rate)) rate = cfg.rate;
+  }
   function send(c) {
     if (!c || typeof c !== "object") return;
     const id = c.id;
@@ -894,6 +928,11 @@ window.BenchSim = function BenchSim(emit, opts) {
       case "ping": return;
       case "pin": { const e = pinCmd(c); if (e) err(e, id); out(state()); return; }
       case "alloff": for (const p of pins.values()) if (p.owner === "user" && p.mode !== "off") release(p); out(state()); return;
+      case "suspend": if (!suspended) { suspendSnap = cfgNow(); suspended = true; for (const p of pins.values()) if (p.owner === "user" && p.mode !== "off") release(p); } out(state()); return;
+      case "resume": if (!suspended) err("Nothing is suspended.", id); else { const sn = suspendSnap; suspended = false; suspendSnap = null; if (sn) applyCfg(sn); } out(state()); return;
+      case "cfg_save": { const nm = (c.name || "").trim(); if (!nm) err("Give the config a name first.", id); else if (!configs.has(nm) && configs.size >= 6) err("All 6 slots are full. Delete one first.", id); else configs.set(nm, JSON.stringify(cfgNow())); out(state()); return; }
+      case "cfg_apply": { const j = configs.get(c.name); if (!j) err("Couldn't find that config.", id); else applyCfg(JSON.parse(j)); out(state()); return; }
+      case "cfg_delete": configs.delete(c.name); out(state()); return;
       case "rate": if (!RATES.includes(c.hz)) err("Pick 10, 20, 50, 100 or 200 samples per second.", id); else rate = c.hz; out(state()); return;
       case "failsafe": failsafe = !!c.on; out(state()); return;
       case "led": {
@@ -958,6 +997,17 @@ window.BenchSim = function BenchSim(emit, opts) {
         if (!ssid || ssid.length > 32) return resolve({ok:false, err:"Network name must be 1-32 characters."});
         if (pass && (pass.length < 8 || pass.length > 63)) return resolve({ok:false, err:"WiFi passwords are 8-63 characters (or leave it blank for an open network)."});
         return resolve({ok:true});
+      }
+      if (path.startsWith("/api/config/get")) {
+        const q = new URLSearchParams((path.split("?")[1]) || ""); const nm = q.get("name") || "";
+        if (configs.has(nm)) return resolve(JSON.parse(configs.get(nm)));
+        return resolve({ok:false, err:"No config by that name"});
+      }
+      if (path === "/api/config/import") {
+        const cfg = body && body.get("cfg");
+        if (!cfg) return resolve({ok:false, err:"No config data was sent."});
+        try { const o = JSON.parse(cfg); applyCfg(o); const nm = body.get("name"); if (nm) configs.set(nm, cfg); setTimeout(() => { out({t:"notice", msg:"Imported config applied."}); out(state()); }, 20); return resolve({ok:true}); }
+        catch (e) { return resolve({ok:false, err:"That config file couldn't be read."}); }
       }
       resolve({ok:true});
     }, 120));
@@ -1297,6 +1347,8 @@ function onState(m) {
   S.i2c = m.i2c || S.i2c;
   S.rate = m.rate || S.rate;
   S.fs = !!m.fs;
+  S.susp = !!m.susp;
+  S.cfgs = m.cfgs || [];
   const analog = [...S.pins.values()].filter(p => p.m === "adc").map(p => p.g).sort((a, b) => a - b);
   for (const g of [...S.slots.keys()]) if (!analog.includes(g)) { S.slots.delete(g); S.series.delete(g); }
   for (const g of analog) {
@@ -1314,6 +1366,8 @@ function onState(m) {
   updateCounts();
   const fs = $("#fsToggle"); if (fs) fs.checked = S.fs;
   $("#rateSel").value = String(S.rate);
+  renderSuspend();
+  renderConfigs();
 }
 
 function onLive(m) {
@@ -1338,6 +1392,83 @@ function onLive(m) {
   liveDirty = true;
   scopeDirty = true;
 }
+
+function renderSuspend() {
+  const on = !!S.susp;
+  $$(".js-suspend").forEach(b => {
+    b.textContent = on ? "Resume" : "Suspend";
+    b.classList.toggle("on", on);
+    b.title = on ? "Restore the setup you suspended" : "Pause all outputs but keep your setup";
+  });
+  const bar = $("#suspBar"); if (bar) bar.hidden = !on;
+}
+
+function currentConfig() {
+  const pins = [...S.pins.values()].filter(p => p.m !== "off" && p.m !== "i2c");
+  return { pins, rate: S.rate };
+}
+
+function slug(x) { return (x || "setup").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "setup"; }
+
+function downloadJson(name, obj) {
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = h("a", { href: url, download: name });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+async function exportConfig(name) {
+  try {
+    const data = await api.get("/api/config/get?name=" + encodeURIComponent(name));
+    if (!data || data.ok === false) { toast((data && data.err) || "Couldn't export that config.", "err"); return; }
+    downloadJson("benchbuddy-" + slug(name) + ".json", data);
+    toast('Exported "' + name + '".', "ok");
+  } catch (e) { toast("Export failed.", "err"); }
+}
+
+function exportCurrent() {
+  const cfg = currentConfig();
+  if (!cfg.pins.length) { toast("Nothing to export yet — set up a pin first.", "err"); return; }
+  downloadJson("benchbuddy-setup.json", cfg);
+  toast("Exported the current setup.", "ok");
+}
+
+async function importConfig() {
+  const inp = $("#cfgFile"); const f = inp && inp.files[0];
+  if (!f) { toast("Pick a .json file first.", "err"); return; }
+  if (f.size > 4000) { toast("That file is too big to be a BenchBuddy config.", "err"); return; }
+  let text;
+  try { text = await f.text(); } catch (e) { toast("Couldn't read that file.", "err"); return; }
+  try { JSON.parse(text); } catch (e) { toast("That file isn't valid JSON.", "err"); return; }
+  const r = await api.post("/api/config/import", { cfg: text });
+  if (r && r.ok === false) toast(r.err || "Import failed.", "err");
+  if (inp) inp.value = "";
+}
+
+function renderConfigs() {
+  const box = $("#cfgList"); if (!box) return;
+  const cfgs = S.cfgs || [];
+  if (!cfgs.length) {
+    box.replaceChildren(h("div", { class: "empty", style: "padding:14px" }, "No saved setups yet. Configure the board, name it above, and hit Save current."));
+    return;
+  }
+  box.replaceChildren(...cfgs.map(name => h("div", { class: "cfg-row" },
+    h("span", { class: "cfg-name" }, name),
+    h("div", { class: "row", style: "gap:6px;flex-wrap:nowrap" },
+      h("button", { class: "btn sm", type: "button", onclick: () => { if (cmd({ t: "cfg_apply", name })) toast('Loading "' + name + '"…', "ok", 2000); } }, "Load"),
+      h("button", { class: "btn sm", type: "button", onclick: () => exportConfig(name) }, "Export"),
+      h("button", { class: "btn sm danger", type: "button", onclick: () => { if (cmd({ t: "cfg_delete", name })) toast('Deleted "' + name + '".', "ok", 2000); } }, "Delete")
+    ))));
+}
+
+function saveConfig() {
+  const inp = $("#cfgName"); const name = ((inp && inp.value) || "").trim();
+  if (!name) { toast("Name the setup first.", "err"); return; }
+  if (cmd({ t: "cfg_save", name })) { toast('Saved "' + name + '".', "ok"); if (inp) inp.value = ""; }
+}
+
+function toggleSuspend() { cmd({ t: S.susp ? "resume" : "suspend" }); }
 
 function currentSkin() { return document.documentElement.getAttribute("data-skin") || "lab"; }
 function applySkin(name) {
@@ -2397,6 +2528,11 @@ function bind() {
   const allOff = () => { if (cmd({ t: "alloff" })) toast("All outputs off.", "ok", 2500); };
   $("#killBtn").addEventListener("click", allOff);
   $("#allOffSmall").addEventListener("click", allOff);
+  $$(".js-suspend").forEach(b => b.addEventListener("click", toggleSuspend));
+  { const b = $("#cfgSaveBtn"); if (b) b.addEventListener("click", saveConfig); }
+  { const b = $("#cfgName"); if (b) b.addEventListener("keydown", e => { if (e.key === "Enter") saveConfig(); }); }
+  { const b = $("#cfgExportBtn"); if (b) b.addEventListener("click", exportCurrent); }
+  { const b = $("#cfgImportBtn"); if (b) b.addEventListener("click", importConfig); }
   $("#sheetBackdrop").addEventListener("click", closeSheet);
   document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); });
   mqSheet.addEventListener ? mqSheet.addEventListener("change", () => { if (!mqSheet.matches) closeSheet(); }) : null;

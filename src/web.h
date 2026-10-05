@@ -24,4 +24,6 @@ void webScheduleReboot(uint32_t delayMs);
 
 void webBuildInfo(String &out);
 
+bool webTakePendingImport(String &cfg, String &name);
+
 }  // namespace bb

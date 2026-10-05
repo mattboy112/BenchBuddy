@@ -76,6 +76,8 @@ uint16_t gSampleHz = 50;
 int gLedPin = -1;
 uint32_t gLastSnapMs = 0;
 uint32_t gLastServoMs = 0;
+bool gSuspended = false;
+String gSuspendJson;
 
 const char *modeName(Mode m) {
   switch (m) {
@@ -150,7 +152,10 @@ Pin *findPin(int gpio) {
 }
 
 uint8_t pwmResolution(uint32_t freq) {
-  uint32_t ratio = 80000000UL / freq;
+  // ESP32-S3 Arduino clocks LEDC from the 40 MHz XTAL (not the 80 MHz APB),
+  // so size resolution against 40 MHz or ledc_timer_config() rejects higher
+  // frequencies like 25 kHz.
+  uint32_t ratio = 40000000UL / freq;
   uint8_t bits = 1;
   while (bits < 14 && (1UL << (bits + 1)) <= ratio) bits++;
   return bits;
@@ -159,7 +164,7 @@ uint8_t pwmResolution(uint32_t freq) {
 void writeDuty(Pin &p) {
   uint32_t full = 1UL << p.res;
   uint32_t counts = (uint32_t)lround(p.duty / 100.0 * (double)full);
-  if (counts > full) counts = full;
+  if (counts >= full) counts = full - 1;  // keep a low tick at 100% so 4-pin fans still see PWM edges
   ledcWrite(p.gpio, counts);
 }
 
@@ -452,7 +457,7 @@ bool pinsCommand(JsonObjectConst cmd, String &err) {
     return false;
   }
 
-  bool rebuild = modeChange || (target == Mode::Pwm && next.freq != p->freq);
+  bool rebuild = modeChange;
   if (rebuild) {
     Pin prev = *p;
     Mode prevMode = p->mode;
@@ -486,6 +491,16 @@ bool pinsCommand(JsonObjectConst cmd, String &err) {
       digitalWrite(p->gpio, p->level ? HIGH : LOW);
       break;
     case Mode::Pwm:
+      if (next.freq != p->freq) {
+        uint8_t res = pwmResolution(next.freq);
+        if (ledcChangeFrequency(p->gpio, next.freq, res) == 0) {
+          err = "Couldn't set that PWM frequency on this pin.";
+          return false;
+        }
+        p->freq = next.freq;
+        p->res = res;
+        p->freqActual = ledcReadFreq(p->gpio);
+      }
       p->duty = next.duty;
       writeDuty(*p);
       break;
@@ -510,11 +525,87 @@ bool pinsCommand(JsonObjectConst cmd, String &err) {
   return true;
 }
 
-void pinsAllOff() {
+namespace {
+void deenergizeAll() {
   for (size_t i = 0; i < gPinCount; i++) {
     Pin &p = gPins[i];
     if (p.owner == Owner::User && p.mode != Mode::Off) releaseHardware(p);
   }
+}
+}  // namespace
+
+void pinsAllOff() {
+  deenergizeAll();
+  gSuspended = false;
+  gSuspendJson = "";
+}
+
+void pinsConfigJson(JsonObject out) {
+  JsonArray arr = out["pins"].to<JsonArray>();
+  for (size_t i = 0; i < gPinCount; i++) {
+    const Pin &p = gPins[i];
+    if (p.owner != Owner::User || p.mode == Mode::Off) continue;
+    pinStateJson(p, arr.add<JsonObject>());
+  }
+  out["rate"] = gSampleHz;
+}
+
+bool pinsApplyConfig(JsonObjectConst cfg, String &err) {
+  deenergizeAll();
+  gSuspended = false;
+  gSuspendJson = "";
+  int failures = 0;
+  String firstErr;
+  for (JsonObjectConst e : cfg["pins"].as<JsonArrayConst>()) {
+    String e2;
+    if (!pinsCommand(e, e2)) {
+      failures++;
+      if (firstErr.isEmpty()) firstErr = e2;
+    }
+  }
+  int hz = cfg["rate"] | 0;
+  if (hz > 0) pinsSetSampleHz((uint16_t)hz);
+  if (failures) {
+    err = firstErr;
+    return false;
+  }
+  return true;
+}
+
+void pinsSuspend() {
+  if (gSuspended) return;
+  JsonDocument doc;
+  pinsConfigJson(doc.to<JsonObject>());
+  gSuspendJson = "";
+  serializeJson(doc, gSuspendJson);
+  gSuspended = true;
+  deenergizeAll();
+}
+
+bool pinsResume(String &err) {
+  if (!gSuspended) {
+    err = "Nothing is suspended.";
+    return false;
+  }
+  JsonDocument doc;
+  if (deserializeJson(doc, gSuspendJson)) {
+    gSuspended = false;
+    gSuspendJson = "";
+    err = "The suspended setup was lost.";
+    return false;
+  }
+  String e2;
+  pinsApplyConfig(doc.as<JsonObjectConst>(), e2);
+  gSuspended = false;
+  gSuspendJson = "";
+  return true;
+}
+
+bool pinsSuspended() { return gSuspended; }
+
+void pinsCancelSuspend() {
+  gSuspended = false;
+  gSuspendJson = "";
 }
 
 bool pinsHasActiveOutputs() {

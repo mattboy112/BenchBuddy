@@ -2,6 +2,7 @@
 #include <ArduinoJson.h>
 
 #include "config.h"
+#include "configs.h"
 #include "i2c_tools.h"
 #include "log.h"
 #include "net.h"
@@ -54,6 +55,8 @@ String stateJson() {
   i2cStateJson(doc["i2c"].to<JsonObject>());
   doc["rate"] = pinsSampleHz();
   doc["fs"] = netFailsafeEnabled();
+  doc["susp"] = pinsSuspended();
+  cfgListJson(doc["cfgs"].to<JsonArray>());
   String out;
   serializeJson(doc, out);
   return out;
@@ -123,6 +126,7 @@ void handleCommand(const WsCommand &c) {
       return;
     }
     if (!pinsCommand(doc.as<JsonObjectConst>(), err)) sendError(c.client, err, id);
+    else pinsCancelSuspend();
     gStateDirty = true;
     return;
   }
@@ -131,6 +135,57 @@ void handleCommand(const WsCommand &c) {
     pinsAllOff();
     gStateDirty = true;
     logf("[cmd] all outputs off");
+    return;
+  }
+
+  if (strcmp(t, "suspend") == 0) {
+    if (webOtaActive()) {
+      sendError(c.client, "A firmware update is running.", id);
+      return;
+    }
+    pinsSuspend();
+    gStateDirty = true;
+    logf("[cmd] suspended");
+    return;
+  }
+
+  if (strcmp(t, "resume") == 0) {
+    if (!pinsResume(err)) sendError(c.client, err, id);
+    gStateDirty = true;
+    logf("[cmd] resumed");
+    return;
+  }
+
+  if (strcmp(t, "cfg_save") == 0) {
+    JsonDocument cfg;
+    pinsConfigJson(cfg.to<JsonObject>());
+    String json;
+    serializeJson(cfg, json);
+    if (!cfgSave(doc["name"] | "", json, err)) sendError(c.client, err, id);
+    gStateDirty = true;
+    return;
+  }
+
+  if (strcmp(t, "cfg_apply") == 0) {
+    String json;
+    if (!cfgGet(doc["name"] | "", json)) {
+      sendError(c.client, "Couldn't find that config.", id);
+      return;
+    }
+    JsonDocument cfg;
+    if (deserializeJson(cfg, json)) {
+      sendError(c.client, "That saved config is corrupted.", id);
+      return;
+    }
+    if (!pinsApplyConfig(cfg.as<JsonObjectConst>(), err))
+      sendError(c.client, "Loaded, but a pin was skipped: " + err, id);
+    gStateDirty = true;
+    return;
+  }
+
+  if (strcmp(t, "cfg_delete") == 0) {
+    if (!cfgDelete(doc["name"] | "", err)) sendError(c.client, err, id);
+    gStateDirty = true;
     return;
   }
 
@@ -280,6 +335,28 @@ void loop() {
 
   static WsCommand cmd;
   for (int i = 0; i < kMaxCommandsPerLoop && webNextCommand(cmd); i++) handleCommand(cmd);
+
+  {
+    String cfgData, cfgSaveName;
+    if (webTakePendingImport(cfgData, cfgSaveName)) {
+      JsonDocument cfg;
+      JsonDocument n;
+      n["t"] = "notice";
+      if (deserializeJson(cfg, cfgData)) {
+        n["msg"] = "That imported config file couldn't be read.";
+      } else {
+        String e;
+        pinsApplyConfig(cfg.as<JsonObjectConst>(), e);
+        if (cfgSaveName.length()) {
+          String e2;
+          cfgSave(cfgSaveName, cfgData, e2);
+        }
+        n["msg"] = "Imported config applied.";
+      }
+      send(0, n);
+      gStateDirty = true;
+    }
+  }
 
   bool ota = webOtaActive();
   if (ota && !gOtaHandled) {
