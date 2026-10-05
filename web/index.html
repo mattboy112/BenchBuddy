@@ -1,0 +1,2527 @@
+<title>BenchBuddy</title>
+<style>
+@font-face{font-family:"Barlow Semi Condensed";src:url(fonts/bsc-500.woff2) format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:"Barlow Semi Condensed";src:url(fonts/bsc-600.woff2) format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:"IBM Plex Mono";src:url(fonts/plex-400.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"IBM Plex Mono";src:url(fonts/plex-500.woff2) format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:"Instrument Sans";src:url(fonts/isans-400.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Instrument Sans";src:url(fonts/isans-600.woff2) format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:"JetBrains Mono";src:url(fonts/jbm-400.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"JetBrains Mono";src:url(fonts/jbm-500.woff2) format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:"Share Tech Mono";src:url(fonts/stm-400.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"VT323";src:url(fonts/vt323-400.woff2) format("woff2");font-weight:400;font-display:swap}
+
+/* Lab Instrument (default): slate bench gear, Keysight-style channel colors */
+:root{
+  color-scheme:dark;
+  --bg:#0e1216;--bg2:#141a20;--bg3:#1b232b;--bg-inset:#0a0e12;
+  --line:#232d36;--line2:#33414d;
+  --fg:#e3eaf0;--fg2:#97a6b3;--fg3:#5f6e7b;
+  --accent:#3fd0e0;--accent2:#7fe3ee;--accent-fg:#04222a;--accent-soft:rgba(63,208,224,.12);
+  --ok:#4fd88a;--warn:#f2b33d;--bad:#ff5d5d;--bad-fg:#2a0606;
+  --ch1:#f4d03f;--ch2:#f472b6;--ch3:#60a5fa;--ch4:#e5e7eb;--i2c:#a78bfa;--servo:#ff8a3d;
+  --power:#ff6b5b;--ground:#5f6e7b;
+  --scope-bg:#0a0d10;--grid:rgba(151,166,179,.08);--grid-major:rgba(151,166,179,.2);
+  --pcb:#0f1f1b;--pcb-line:#1e3a33;--module:#28313a;--module-fg:#9aa8b4;
+  --font-ui:"Barlow Semi Condensed",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-num:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Menlo,Consolas,monospace;
+  --font-disp:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --font-title:"Barlow Semi Condensed",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --disp-scale:1;--title-scale:1.08;--fs:15px;
+  --r:6px;--r-sm:4px;--shadow:none;
+  --label-case:uppercase;--label-track:.09em;--label-size:11.5px;
+  --glow:none;--trace-glow:0;
+  --panel-border:1px solid var(--line);
+}
+:root[data-skin="studio"]{
+  color-scheme:light;
+  --bg:#f1f3f6;--bg2:#ffffff;--bg3:#eef1f5;--bg-inset:#f6f8fa;
+  --line:#e0e5eb;--line2:#c8d0da;
+  --fg:#141b24;--fg2:#556170;--fg3:#8a95a2;
+  --accent:#2b59e8;--accent2:#1d44c4;--accent-fg:#ffffff;--accent-soft:rgba(43,89,232,.08);
+  --ok:#2f9e44;--warn:#c27400;--bad:#d4383a;--bad-fg:#ffffff;
+  --ch1:#c2255c;--ch2:#7048e8;--ch3:#b8860b;--ch4:#343a40;--i2c:#0c8599;--servo:#e8590c;
+  --power:#d4383a;--ground:#8a95a2;
+  --scope-bg:#ffffff;--grid:rgba(20,27,36,.05);--grid-major:rgba(20,27,36,.12);
+  --pcb:#1d6650;--pcb-line:#2c8466;--module:#cfd4da;--module-fg:#47525d;
+  --font-ui:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-num:"JetBrains Mono",ui-monospace,"Cascadia Mono",Menlo,Consolas,monospace;
+  --font-disp:"Instrument Sans",system-ui,sans-serif;
+  --font-title:"Instrument Sans",system-ui,sans-serif;
+  --disp-scale:1;--title-scale:1;--fs:14.5px;
+  --r:12px;--r-sm:8px;--shadow:0 1px 2px rgba(20,27,36,.04),0 6px 20px rgba(20,27,36,.05);
+  --label-case:none;--label-track:0;--label-size:12.5px;
+  --glow:none;--trace-glow:0;
+  --panel-border:1px solid var(--line);
+}
+:root[data-skin="deck"]{
+  color-scheme:dark;
+  --bg:#090705;--bg2:#100c08;--bg3:#19130b;--bg-inset:#050403;
+  --line:#3a2a12;--line2:#6b4c1d;
+  --fg:#ffb641;--fg2:#c98b2f;--fg3:#7d5a22;
+  --accent:#ffb641;--accent2:#ffd27f;--accent-fg:#140d04;--accent-soft:rgba(255,182,65,.1);
+  --ok:#a6f05a;--warn:#ffe14d;--bad:#ff5a36;--bad-fg:#140402;
+  --ch1:#f2e6c4;--ch2:#4fe0d0;--ch3:#6ab7ff;--ch4:#ffe14d;--i2c:#c79bff;--servo:#ff4f8b;
+  --power:#ff5a36;--ground:#7d5a22;
+  --scope-bg:#050403;--grid:rgba(255,182,65,.06);--grid-major:rgba(255,182,65,.16);
+  --pcb:#0d0a06;--pcb-line:#3a2a12;--module:#19130b;--module-fg:#c98b2f;
+  --font-ui:"Share Tech Mono",ui-monospace,Menlo,Consolas,monospace;
+  --font-num:"Share Tech Mono",ui-monospace,Menlo,Consolas,monospace;
+  --font-disp:"VT323",ui-monospace,monospace;
+  --font-title:"VT323",ui-monospace,monospace;
+  --disp-scale:1.38;--title-scale:1.38;--fs:14.5px;
+  --r:0px;--r-sm:0px;--shadow:none;
+  --label-case:uppercase;--label-track:.12em;--label-size:12px;
+  --glow:0 0 10px rgba(255,182,65,.4);--trace-glow:7;
+  --panel-border:1px solid var(--line2);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:var(--fs);line-height:1.45;-webkit-font-smoothing:antialiased;min-height:100vh}
+:root[data-skin="deck"] body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:60;background:repeating-linear-gradient(to bottom,rgba(0,0,0,0) 0,rgba(0,0,0,0) 2px,rgba(0,0,0,.22) 3px);mix-blend-mode:multiply}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-family:var(--font-num);font-variant-numeric:tabular-nums}
+.label{font-size:var(--label-size);text-transform:var(--label-case);letter-spacing:var(--label-track);color:var(--fg2);font-weight:600}
+.muted{color:var(--fg2)}
+.faint{color:var(--fg3)}
+.hint{color:var(--fg2);font-size:.88em;line-height:1.45;margin:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.app{max-width:1480px;margin:0 auto;padding-inline:16px;padding-block:0 40px}
+
+/* Top bar */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--bg);display:flex;align-items:center;gap:14px;padding-block:12px 10px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;margin-right:auto}
+.brand-mark{width:34px;height:34px;flex:none;border-radius:calc(var(--r) + 2px);background:var(--bg3);border:var(--panel-border);display:grid;place-items:center}
+.brand-mark svg{width:22px;height:22px}
+.brand-name{font-family:var(--font-title);font-weight:600;font-size:calc(20px * var(--title-scale));line-height:1;letter-spacing:.01em;text-shadow:var(--glow)}
+.brand-host{display:block;font-size:12px;color:var(--fg2);font-family:var(--font-num);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:42vw}
+.conn{display:inline-flex;align-items:center;gap:8px;padding:5px 11px 5px 9px;border-radius:999px;background:var(--bg2);border:var(--panel-border);font-size:13px;font-weight:600;white-space:nowrap}
+:root[data-skin="deck"] .conn{border-radius:0}
+.conn i{width:8px;height:8px;border-radius:50%;background:var(--fg3);flex:none}
+.conn[data-s="live"] i{background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 22%,transparent)}
+.conn[data-s="connecting"] i,.conn[data-s="offline"] i{background:var(--warn);animation:blink 1s steps(2,start) infinite}
+.conn[data-s="demo"] i{background:var(--accent)}
+@keyframes blink{to{visibility:hidden}}
+.stats{display:flex;gap:14px;align-items:center;color:var(--fg2);font-size:13px}
+.stats span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.bars{display:inline-flex;align-items:flex-end;gap:2px;height:12px}
+.bars b{width:3px;background:var(--line2);border-radius:1px}
+.bars b:nth-child(1){height:4px}.bars b:nth-child(2){height:7px}.bars b:nth-child(3){height:10px}.bars b:nth-child(4){height:12px}
+.bars b.on{background:var(--fg)}
+.skins{display:inline-flex;gap:4px;padding:3px;border-radius:999px;background:var(--bg2);border:var(--panel-border)}
+:root[data-skin="deck"] .skins{border-radius:0}
+.skin-btn{width:26px;height:26px;border-radius:50%;border:2px solid transparent;padding:0;background:none;display:grid;place-items:center}
+:root[data-skin="deck"] .skin-btn{border-radius:0}
+.skin-btn span{width:16px;height:16px;border-radius:50%;display:block}
+:root[data-skin="deck"] .skin-btn span{border-radius:0}
+.skin-btn[aria-pressed="true"]{border-color:var(--accent)}
+.sw-lab{background:linear-gradient(135deg,#141a20 50%,#3fd0e0 50%)}
+.sw-studio{background:linear-gradient(135deg,#ffffff 50%,#2b59e8 50%);box-shadow:inset 0 0 0 1px #c8d0da}
+.sw-deck{background:linear-gradient(135deg,#100c08 50%,#ffb641 50%)}
+.kill{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:var(--r);padding:9px 16px;background:var(--bad);color:var(--bad-fg);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:13px;box-shadow:0 0 0 1px color-mix(in srgb,var(--bad) 60%,#000)}
+.kill:hover{filter:brightness(1.08)}
+.kill:active{transform:translateY(1px)}
+.kill svg{width:15px;height:15px}
+
+.demo-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:2px 0 8px;padding:9px 14px;border-radius:var(--r);background:var(--accent-soft);border:1px dashed color-mix(in srgb,var(--accent) 45%,transparent);font-size:13.5px}
+.demo-bar b{color:var(--accent)}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px;overflow-x:auto;scrollbar-width:none;position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--topbar-h,58px));z-index:29;background:var(--bg)}
+.tabs::-webkit-scrollbar{display:none}
+.tab{position:relative;border:0;background:none;padding:10px 14px 11px;color:var(--fg2);font-weight:600;font-size:14.5px;white-space:nowrap;display:inline-flex;gap:8px;align-items:center;text-transform:var(--label-case);letter-spacing:calc(var(--label-track) * .6)}
+.tab:hover{color:var(--fg)}
+.tab[aria-selected="true"]{color:var(--fg)}
+.tab[aria-selected="true"]::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:2px;background:var(--accent);box-shadow:var(--glow)}
+.tab .count{font-family:var(--font-num);font-size:11.5px;padding:1px 6px;border-radius:999px;background:var(--bg3);color:var(--fg2)}
+:root[data-skin="deck"] .tab .count{border-radius:0}
+.view[hidden]{display:none!important}
+
+/* Panels */
+.panel{position:relative;background:var(--bg2);border:var(--panel-border);border-radius:var(--r);box-shadow:var(--shadow);min-width:0}
+:root[data-skin="deck"] .panel::before,:root[data-skin="deck"] .panel::after{content:"";position:absolute;width:10px;height:10px;border:2px solid var(--accent);pointer-events:none}
+:root[data-skin="deck"] .panel::before{top:-2px;left:-2px;border-right:0;border-bottom:0}
+:root[data-skin="deck"] .panel::after{bottom:-2px;right:-2px;border-left:0;border-top:0}
+.panel-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.panel-h h2,.panel-h h3{margin:0;font-size:var(--label-size);text-transform:var(--label-case);letter-spacing:var(--label-track);font-weight:600;color:var(--fg2)}
+:root[data-skin="studio"] .panel-h h2,:root[data-skin="studio"] .panel-h h3{font-size:14px;color:var(--fg)}
+:root[data-skin="deck"] .panel-h h2::before,:root[data-skin="deck"] .panel-h h3::before{content:"// ";color:var(--fg3)}
+.panel-h .spacer{flex:1}
+.panel-b{padding:16px}
+.stack{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+
+/* Buttons and controls */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line2);background:var(--bg3);color:var(--fg);padding:7px 13px;border-radius:var(--r-sm);font-weight:600;font-size:13.5px;line-height:1.2;white-space:nowrap}
+.btn:hover{border-color:var(--fg3)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.primary:hover{background:var(--accent2);border-color:var(--accent2)}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 45%,var(--line2));background:transparent}
+.btn.sm{padding:4px 9px;font-size:12.5px}
+.btn svg{width:15px;height:15px}
+.seg{display:inline-flex;flex-wrap:wrap;gap:2px;padding:3px;background:var(--bg-inset);border:1px solid var(--line);border-radius:calc(var(--r-sm) + 3px)}
+.seg button{border:0;background:transparent;padding:6px 11px;border-radius:var(--r-sm);color:var(--fg2);font-weight:600;font-size:13px;white-space:nowrap}
+.seg button:hover{color:var(--fg)}
+.seg button[aria-pressed="true"]{background:var(--bg3);color:var(--fg);box-shadow:0 0 0 1px var(--line2)}
+:root[data-skin="studio"] .seg button[aria-pressed="true"]{background:var(--bg2);box-shadow:0 1px 2px rgba(20,27,36,.12),0 0 0 1px var(--line)}
+:root[data-skin="deck"] .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);box-shadow:none}
+.seg button:disabled{opacity:.35;cursor:not-allowed}
+.seg.full{display:flex}
+.seg.full button{flex:1}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.input,.select{width:100%;min-width:0;background:var(--bg-inset);border:1px solid var(--line2);border-radius:var(--r-sm);padding:8px 10px;color:var(--fg);font-size:14px}
+.input.num{font-family:var(--font-num)}
+.input:focus,.select:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+.input-unit{position:relative}
+.input-unit .input{padding-right:42px}
+.input-unit span{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--fg3);font-size:12.5px;pointer-events:none}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line2);background:transparent;color:var(--fg2);padding:4px 10px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap}
+:root[data-skin="deck"] .chip{border-radius:0}
+.chip:hover{color:var(--fg);border-color:var(--fg3)}
+.chip[aria-pressed="true"]{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--bg3);color:var(--fg2);white-space:nowrap;font-family:var(--font-num)}
+:root[data-skin="deck"] .tag{border-radius:0}
+.tag.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 13%,transparent)}
+.tag.warn{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent)}
+.tag.bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 13%,transparent)}
+.tag.acc{color:var(--accent);background:var(--accent-soft)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:999px;background:linear-gradient(to right,var(--accent) var(--p,0%),var(--line2) var(--p,0%))}
+input[type=range]::-moz-range-track{height:6px;border-radius:999px;background:var(--line2)}
+input[type=range]::-moz-range-progress{height:6px;border-radius:999px;background:var(--accent)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;margin-top:-7px;border-radius:50%;background:var(--bg2);border:2px solid var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--bg2);border:2px solid var(--accent)}
+:root[data-skin="deck"] input[type=range]::-webkit-slider-runnable-track{border-radius:0}
+:root[data-skin="deck"] input[type=range]::-webkit-slider-thumb{border-radius:0;background:var(--accent)}
+.switch{position:relative;display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+.switch input{position:absolute;opacity:0;width:1px;height:1px}
+.switch .track{width:42px;height:24px;border-radius:999px;background:var(--line2);position:relative;transition:background .15s;flex:none}
+.switch .track::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--bg2);transition:transform .15s;box-shadow:0 1px 2px rgba(0,0,0,.3)}
+.switch input:checked + .track{background:var(--accent)}
+.switch input:checked + .track::after{transform:translateX(18px)}
+.switch input:focus-visible + .track{outline:2px solid var(--accent);outline-offset:2px}
+:root[data-skin="deck"] .switch .track,:root[data-skin="deck"] .switch .track::after{border-radius:0}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px 16px;margin:0;font-size:14px}
+.kv dt{color:var(--fg2)}
+.kv dd{margin:0;text-align:right;font-family:var(--font-num);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.meter{height:6px;border-radius:999px;background:var(--line);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent);border-radius:inherit}
+.empty{padding:28px 18px;text-align:center;color:var(--fg2)}
+.empty b{display:block;color:var(--fg);font-size:15px;margin-bottom:4px}
+
+/* Pins view */
+.pins-layout{display:grid;grid-template-columns:minmax(0,470px) minmax(0,1fr);gap:20px;align-items:start}
+.board-wrap{padding:16px 10px 14px}
+.board-legend{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;font-size:12px;color:var(--fg2);margin-top:12px}
+.board-legend span{display:inline-flex;align-items:center;gap:6px}
+.board-legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.board{display:grid;grid-template-columns:minmax(0,1fr) 112px minmax(0,1fr);gap:0 8px;align-items:stretch}
+.hdr{display:flex;flex-direction:column;gap:3px;padding-block:72px 54px}
+.pcb{position:relative;background:var(--pcb);border:1px solid var(--pcb-line);border-radius:10px;display:flex;flex-direction:column;align-items:center;padding:10px 8px;min-height:100%}
+:root[data-skin="deck"] .pcb{border-radius:0}
+.pcb::before,.pcb::after{content:"";position:absolute;top:66px;bottom:52px;width:6px;background:repeating-linear-gradient(to bottom,var(--pcb-line) 0 3px,transparent 3px 30px);opacity:.9}
+.pcb::before{left:-4px}.pcb::after{right:-4px}
+.module{width:100%;border-radius:6px;background:var(--module);padding:8px 6px 10px;color:var(--module-fg);text-align:center;font-size:10px;line-height:1.3;font-family:var(--font-num);border:1px solid color-mix(in srgb,var(--module-fg) 25%,transparent)}
+:root[data-skin="deck"] .module{border-radius:0}
+.module .ant{height:16px;margin:-2px auto 6px;width:70%;border:2px solid color-mix(in srgb,var(--module-fg) 55%,transparent);border-top:0;border-radius:0 0 3px 3px;background:repeating-linear-gradient(to right,transparent 0 6px,color-mix(in srgb,var(--module-fg) 55%,transparent) 6px 8px)}
+.module b{display:block;font-size:11px;font-weight:500;color:var(--module-fg)}
+.silk{writing-mode:vertical-rl;transform:rotate(180deg);margin:auto 0;font-family:var(--font-num);font-size:11px;letter-spacing:.18em;color:color-mix(in srgb,#fff 38%,var(--pcb));opacity:.75;white-space:nowrap}
+:root[data-skin="studio"] .silk{color:#cfeee2}
+.pcb-led{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:9.5px;color:color-mix(in srgb,#fff 60%,var(--pcb));font-family:var(--font-num);letter-spacing:.04em}
+:root[data-skin="studio"] .pcb-led{color:#d6efe6}
+.pcb-led i{width:12px;height:12px;border-radius:3px;background:#444;box-shadow:0 0 0 2px rgba(0,0,0,.25)}
+.pcb-btns{display:flex;gap:10px;margin-top:14px}
+.pcb-btns span{width:22px;height:16px;border-radius:3px;background:#c9ccd0;box-shadow:inset 0 -3px 0 #8d9196;font-size:7px;color:#333;display:grid;place-items:center;font-family:var(--font-num)}
+.usb{display:flex;gap:10px;margin-top:12px;margin-bottom:-18px}
+.usb span{width:30px;height:16px;border-radius:5px;background:#b9bec4;border:2px solid #8c9299;font-size:7px;color:#30353b;display:grid;place-items:center;font-family:var(--font-num);font-weight:500}
+.pin{display:grid;align-items:center;gap:6px;height:24px;border:0;background:transparent;padding:0 4px;border-radius:var(--r-sm);color:var(--fg);text-align:left;min-width:0}
+.hdr.l .pin{grid-template-columns:minmax(0,1fr) auto 16px;text-align:right}
+.hdr.r .pin{grid-template-columns:16px auto minmax(0,1fr)}
+.pin:not([disabled]):hover{background:var(--bg3)}
+.pin[aria-pressed="true"]{background:var(--accent-soft);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 55%,transparent)}
+.pin[disabled]{cursor:default}
+.pin .id{font-family:var(--font-num);font-size:12.5px;font-weight:500;white-space:nowrap}
+.pin .id small{color:var(--fg3);font-size:10px;margin-right:1px}
+.pin .st{font-family:var(--font-num);font-size:11px;color:var(--fg2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pin .st:empty::before{content:"";}
+.pin.k-res .id,.pin.k-pwr .id,.pin.k-gnd .id{color:var(--fg3)}
+.pad{width:16px;height:16px;border-radius:50%;border:2px solid var(--fg3);background:transparent;position:relative;display:block}
+.pin.k-pwr .pad{border-color:var(--power);background:color-mix(in srgb,var(--power) 30%,transparent)}
+.pin.k-gnd .pad{border-color:var(--ground);background:var(--ground)}
+.pin.k-res .pad{border-style:dashed;border-color:var(--fg3);opacity:.6}
+.pin.k-adc .pad::after{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--fg3);opacity:.35}
+.pin[data-m="in"] .pad{border-color:var(--ok)}
+.pin[data-m="in"][data-lv="1"] .pad{background:var(--ok)}
+.pin[data-m="out"] .pad{border-color:var(--accent)}
+.pin[data-m="out"][data-lv="1"] .pad{background:var(--accent);box-shadow:0 0 8px color-mix(in srgb,var(--accent) 60%,transparent)}
+.pin[data-m="pwm"] .pad{border-color:var(--accent);background:conic-gradient(var(--accent) var(--duty,50%),transparent 0)}
+.pin[data-m="servo"] .pad{border-color:var(--servo);background:conic-gradient(var(--servo) var(--duty,50%),transparent 0)}
+.pin[data-m="adc"] .pad{border-color:var(--chc,var(--ch1));background:color-mix(in srgb,var(--chc,var(--ch1)) 35%,transparent)}
+.pin[data-m="i2c"] .pad{border-color:var(--i2c);background:color-mix(in srgb,var(--i2c) 35%,transparent)}
+.pin[data-m]:not([data-m="off"]) .st{color:var(--fg)}
+:root[data-skin="deck"] .pad{border-radius:0}
+
+.pins-side{min-width:0}
+.recipes{display:flex;flex-direction:column;gap:8px}
+.recipe{display:flex;flex-direction:column;gap:2px;text-align:left;border:1px solid var(--line);background:var(--bg-inset);border-radius:var(--r-sm);padding:10px 12px;color:var(--fg)}
+.recipe:hover{border-color:var(--accent);background:var(--accent-soft)}
+.recipe b{font-weight:600;font-size:14px}
+.recipe span{color:var(--fg2);font-size:12.5px}
+.insp-head{display:flex;align-items:flex-start;gap:12px;padding:16px 16px 12px;border-bottom:1px solid var(--line)}
+.insp-title{font-family:var(--font-title);font-size:calc(27px * var(--title-scale));line-height:1;font-weight:600;text-shadow:var(--glow)}
+.insp-sub{color:var(--fg2);font-size:13px;margin-top:6px;display:flex;gap:6px;flex-wrap:wrap}
+.insp-close{margin-left:auto;display:none}
+.insp-body{padding:16px;display:flex;flex-direction:column;gap:18px}
+.readout{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.readout .big{font-family:var(--font-disp);font-size:calc(46px * var(--disp-scale));line-height:1;font-weight:500;font-variant-numeric:tabular-nums;text-shadow:var(--glow);letter-spacing:-.01em}
+:root[data-skin="studio"] .readout .big{font-weight:600;letter-spacing:-.02em}
+.readout .unit{font-size:18px;color:var(--fg2);font-family:var(--font-num)}
+.readout-sub{font-family:var(--font-num);font-size:12.5px;color:var(--fg2)}
+.lamp{display:flex;align-items:center;gap:14px}
+.lamp i{width:46px;height:46px;border-radius:50%;border:3px solid var(--line2);background:var(--bg-inset);flex:none;transition:background .08s,box-shadow .08s}
+:root[data-skin="deck"] .lamp i{border-radius:0}
+.lamp[data-on="1"] i{background:var(--ok);border-color:var(--ok);box-shadow:0 0 18px color-mix(in srgb,var(--ok) 55%,transparent)}
+.lamp b{font-family:var(--font-title);font-size:calc(34px * var(--disp-scale));line-height:1;text-shadow:var(--glow)}
+.stat-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stat{background:var(--bg-inset);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;min-width:0}
+.stat .v{font-family:var(--font-num);font-size:18px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat .k{font-size:var(--label-size);text-transform:var(--label-case);letter-spacing:var(--label-track);color:var(--fg2);font-weight:600}
+.bigtoggle{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bigtoggle button{border:1px solid var(--line2);background:var(--bg-inset);border-radius:var(--r);padding:16px 10px;font-family:var(--font-title);font-size:calc(22px * var(--title-scale));font-weight:600;color:var(--fg2);letter-spacing:.04em}
+.bigtoggle button[aria-pressed="true"].hi{background:var(--accent);border-color:var(--accent);color:var(--accent-fg);box-shadow:0 0 22px color-mix(in srgb,var(--accent) 35%,transparent)}
+.bigtoggle button[aria-pressed="true"].lo{background:var(--bg3);border-color:var(--fg3);color:var(--fg)}
+.wave{width:100%;height:46px;display:block}
+.sub-h{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.note{display:flex;gap:10px;padding:10px 12px;border-radius:var(--r-sm);background:var(--bg-inset);border:1px solid var(--line);font-size:13px;color:var(--fg2);line-height:1.45}
+.note svg{width:16px;height:16px;flex:none;margin-top:2px;color:var(--fg3)}
+.note.warn{border-color:color-mix(in srgb,var(--warn) 40%,var(--line));}
+.note.warn svg{color:var(--warn)}
+.spark{width:100%;height:64px;display:block}
+
+.active-list{width:100%;border-collapse:collapse;font-size:14px}
+.active-list th{text-align:left;font-size:var(--label-size);text-transform:var(--label-case);letter-spacing:var(--label-track);color:var(--fg2);font-weight:600;padding:8px 16px;border-bottom:1px solid var(--line)}
+.active-list td{padding:9px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+.active-list tr:last-child td{border-bottom:0}
+.active-list tbody tr{cursor:pointer}
+.active-list tbody tr:hover{background:var(--bg3)}
+.active-list td.v{font-family:var(--font-num);font-variant-numeric:tabular-nums;text-align:right}
+.active-list .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px;vertical-align:middle}
+
+/* Scope */
+.scope-bar{display:flex;gap:10px 14px;align-items:center;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--line)}
+.legend{display:flex;gap:8px;flex-wrap:wrap}
+.legend .ch{cursor:pointer;color:var(--fg);display:inline-flex;align-items:center;gap:8px;padding:5px 10px;border-radius:var(--r-sm);background:var(--bg-inset);border:1px solid var(--line);font-size:13px;white-space:nowrap}
+.legend .ch i{width:10px;height:10px;border-radius:2px}
+.legend .ch b{font-family:var(--font-num);font-weight:500;font-variant-numeric:tabular-nums;min-width:62px;text-align:right}
+.scope-canvas-wrap{position:relative;padding:8px 8px 0}
+#scope{display:block;width:100%;height:420px;touch-action:pan-y}
+.scope-tip{position:absolute;pointer-events:none;background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r-sm);padding:7px 10px;font-family:var(--font-num);font-size:12px;box-shadow:0 6px 18px rgba(0,0,0,.25);white-space:nowrap;z-index:2}
+.scope-tip div{display:flex;gap:8px;align-items:center}
+.scope-tip i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.scope-stats{width:100%;border-collapse:collapse;font-size:13.5px}
+.scope-stats th,.scope-stats td{padding:8px 14px;text-align:right;border-top:1px solid var(--line);white-space:nowrap}
+.scope-stats th:first-child,.scope-stats td:first-child{text-align:left}
+.scope-stats th{font-size:var(--label-size);text-transform:var(--label-case);letter-spacing:var(--label-track);color:var(--fg2);font-weight:600}
+.scope-stats td{font-family:var(--font-num);font-variant-numeric:tabular-nums}
+.scope-stats td:first-child{font-family:var(--font-ui)}
+.tbl-wrap{overflow-x:auto}
+
+/* I2C */
+.i2c-layout{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:20px;align-items:start}
+.addr-grid{display:grid;grid-template-columns:28px repeat(16,minmax(0,1fr));gap:3px;font-family:var(--font-num);font-size:12px;min-width:300px}
+.addr-grid .hx{color:var(--fg3);text-align:center;padding:3px 0}
+.addr-grid .rh{color:var(--fg3);text-align:right;padding-right:6px;align-self:center}
+.addr-grid .cell{aspect-ratio:1.35;display:grid;place-items:center;border-radius:var(--r-sm);background:var(--bg-inset);color:var(--fg3);border:1px solid transparent;font-size:11.5px;padding:0}
+.addr-grid .cell.rsv{background:transparent;opacity:.35}
+.addr-grid .cell.hit{background:var(--accent-soft);color:var(--accent);border-color:color-mix(in srgb,var(--accent) 55%,transparent);font-weight:600;cursor:pointer}
+.addr-grid .cell.hit[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
+.health{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.health li{display:flex;gap:10px;align-items:flex-start;font-size:13.5px}
+.health li .tag{flex:none;margin-top:1px}
+.dev-list{display:flex;flex-direction:column}
+.dev{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 16px;border-top:1px solid var(--line)}
+.dev:first-child{border-top:0}
+.dev .addr{font-family:var(--font-num);font-size:15px;color:var(--accent);font-weight:500}
+.dev .what{min-width:0}
+.dev .what b{display:block;font-weight:600;font-size:14px}
+.dev .what span{color:var(--fg2);font-size:12.5px}
+.log{display:flex;flex-direction:column;max-height:340px;overflow:auto;font-family:var(--font-num);font-size:12.5px}
+.log .entry{padding:9px 16px;border-top:1px solid var(--line);display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px}
+.log .entry:first-child{border-top:0}
+.log .entry .t{color:var(--fg3)}
+.log .entry .bytes{grid-column:1/-1;color:var(--fg);overflow-wrap:anywhere;white-space:pre-wrap}
+.log .entry.err .bytes{color:var(--bad)}
+
+/* System */
+.sys-layout{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:start}
+.sys-layout .span2{grid-column:span 2}
+.net-list{display:flex;flex-direction:column;max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:var(--r-sm)}
+.net-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border:0;border-top:1px solid var(--line);background:transparent;text-align:left;width:100%;color:var(--fg)}
+.net-item:first-child{border-top:0}
+.net-item:hover{background:var(--bg3)}
+.net-item[aria-pressed="true"]{background:var(--accent-soft)}
+.net-item .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.skin-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.skin-card{border:1px solid var(--line2);border-radius:var(--r);padding:0;overflow:hidden;background:var(--bg-inset);text-align:left}
+.skin-card[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.skin-card .pv{height:64px;display:flex;align-items:flex-end;gap:5px;padding:10px}
+.skin-card .pv i{flex:1;border-radius:2px}
+.skin-card .nm{padding:8px 10px 10px;font-weight:600;font-size:13px}
+.skin-card .nm span{display:block;font-weight:400;color:var(--fg2);font-size:12px}
+.progress{height:8px;border-radius:999px;background:var(--line);overflow:hidden}
+.progress i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+
+/* Toasts */
+.toasts{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:80;display:flex;flex-direction:column;gap:8px;max-width:min(380px,calc(100vw - 32px))}
+.toast{display:flex;gap:10px;align-items:flex-start;background:var(--bg2);border:1px solid var(--line2);border-left:3px solid var(--accent);border-radius:var(--r-sm);padding:11px 14px;box-shadow:0 10px 30px rgba(0,0,0,.25);font-size:13.5px;animation:tin .18s ease-out}
+.toast.err{border-left-color:var(--bad)}
+.toast.ok{border-left-color:var(--ok)}
+.toast button{margin-left:auto;border:0;background:none;color:var(--fg3);padding:0 2px;font-size:16px;line-height:1}
+@keyframes tin{from{transform:translateY(8px);opacity:0}}
+.sheet-backdrop{display:none}
+
+@media (max-width:1180px){
+  .sys-layout{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sys-layout .span2{grid-column:1/-1}
+}
+@media (max-width:980px){
+  .pins-layout,.i2c-layout{grid-template-columns:minmax(0,1fr)}
+  .board-panel{max-width:520px;width:100%;margin-inline:auto}
+  .inspector{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:50;max-height:78vh;overflow:auto;border-radius:calc(var(--r) + 6px) calc(var(--r) + 6px) 0 0;transform:translateY(105%);transition:transform .22s ease-out;padding-bottom:env(safe-area-inset-bottom,0px);box-shadow:0 -12px 40px rgba(0,0,0,.35)}
+  .inspector.open{transform:none}
+  .insp-close{display:inline-flex}
+  .sheet-backdrop{display:block;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:49;opacity:0;pointer-events:none;transition:opacity .2s}
+  .sheet-backdrop.open{opacity:1;pointer-events:auto}
+  .stats .hide-sm{display:none}
+}
+@media (max-width:720px){
+  .sys-layout{grid-template-columns:minmax(0,1fr)}
+  .stats{display:none}
+  .topbar .skins{display:none}
+  .topbar{gap:10px}
+  .brand-mark{width:30px;height:30px}
+  .brand-host{max-width:46vw}
+  .kill span{display:none}
+  .kill{padding:9px 12px}
+  #scope{height:320px}
+  .grid2{grid-template-columns:minmax(0,1fr)}
+  .stat-row{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .stat{padding:8px}
+  .stat .v{font-size:15px}
+  .skin-cards{grid-template-columns:minmax(0,1fr)}
+  .skin-card{display:grid;grid-template-columns:110px minmax(0,1fr);align-items:center}
+  .skin-card .pv{height:52px}
+  .addr-grid{gap:2px;font-size:10px;grid-template-columns:22px repeat(16,minmax(0,1fr))}
+  .addr-grid .cell{font-size:9.5px;aspect-ratio:1;border-radius:3px}
+  .addr-grid .rh{padding-right:3px}
+}
+@media (max-width:520px){
+  .seg.modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:440px){
+  .board{grid-template-columns:minmax(0,1fr) 72px minmax(0,1fr);gap:0 4px}
+  .module{font-size:8px;padding:6px 3px}
+  .module b{font-size:9px}
+  .pin .st{font-size:10px}
+  .hdr.l .pin{grid-template-columns:minmax(0,1fr) auto 14px}
+  .hdr.r .pin{grid-template-columns:14px auto minmax(0,1fr)}
+  .pad{width:14px;height:14px}
+  .usb span{width:24px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+<script>
+(function(){var s=null;try{s=localStorage.getItem("bb-skin")}catch(e){}
+if(s!=="lab"&&s!=="studio"&&s!=="deck"){var t=document.documentElement.getAttribute("data-theme");
+s=t==="light"?"studio":t==="dark"?"lab":(window.matchMedia&&matchMedia("(prefers-color-scheme: light)").matches?"studio":"lab")}
+document.documentElement.setAttribute("data-skin",s)})();
+</script>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<symbol id="i-power" viewBox="0 0 24 24"><path d="M12 3.5v8M6.6 6.8a7.5 7.5 0 1 0 10.8 0" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.6v.2" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></symbol>
+<symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3.5 2.5 20h19L12 3.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4.5M12 17.4v.2" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></symbol>
+<symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5L7 4.5Z" fill="currentColor"/></symbol>
+<symbol id="i-dl" viewBox="0 0 24 24"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4M8 12h8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-up" viewBox="0 0 24 24"><path d="M12 20V9m-5 5 5-5 5 5M5 4h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-restart" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.5h4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+</svg>
+
+<div class="app">
+<header class="topbar" id="topbar">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.5 14h4l2.5-7 3.5 11 2.5-6.5 1.8 2.5h4.7" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div style="min-width:0"><div class="brand-name">BenchBuddy</div><span class="brand-host" id="hostLabel">looking for the board…</span></div>
+  </div>
+  <div class="conn" id="conn" data-s="connecting" role="status" aria-live="polite"><i></i><span id="connText">Connecting</span></div>
+  <div class="stats">
+    <span title="WiFi signal"><span class="bars" id="rssiBars" aria-hidden="true"><b></b><b></b><b></b><b></b></span><span class="num" id="rssiText">--</span></span>
+    <span class="hide-sm" title="Chip temperature"><span class="num" id="tempText">--</span></span>
+    <span class="hide-sm" title="Time since boot"><span class="num" id="upText">--</span></span>
+  </div>
+  <div class="skins" role="group" aria-label="Theme">
+    <button class="skin-btn" type="button" data-skin="lab" title="Lab Instrument" aria-label="Lab Instrument theme"><span class="sw-lab"></span></button>
+    <button class="skin-btn" type="button" data-skin="studio" title="Clean Studio" aria-label="Clean Studio theme"><span class="sw-studio"></span></button>
+    <button class="skin-btn" type="button" data-skin="deck" title="Cyberdeck" aria-label="Cyberdeck theme"><span class="sw-deck"></span></button>
+  </div>
+  <button class="kill" type="button" id="killBtn" title="Turn every output off right now"><svg aria-hidden="true"><use href="#i-power"/></svg><span>All off</span></button>
+</header>
+
+<div class="demo-bar" id="demoBar" hidden>
+  <b>Demo mode</b><span>This is a simulated board so you can try every screen. Flash BenchBuddy to an ESP32-S3 to drive real pins.</span>
+</div>
+
+<nav class="tabs" role="tablist" aria-label="Sections">
+  <button class="tab" type="button" role="tab" id="tab-pins" data-tab="pins" aria-controls="view-pins" aria-selected="true">Pins <span class="count" id="pinsCount">0</span></button>
+  <button class="tab" type="button" role="tab" id="tab-scope" data-tab="scope" aria-controls="view-scope" aria-selected="false">Scope <span class="count" id="scopeCount">0</span></button>
+  <button class="tab" type="button" role="tab" id="tab-i2c" data-tab="i2c" aria-controls="view-i2c" aria-selected="false">I2C <span class="count" id="i2cCount">–</span></button>
+  <button class="tab" type="button" role="tab" id="tab-system" data-tab="system" aria-controls="view-system" aria-selected="false">System</button>
+</nav>
+
+<main>
+<section class="view" id="view-pins" role="tabpanel" aria-labelledby="tab-pins">
+  <div class="pins-layout">
+    <div class="panel board-panel">
+      <div class="panel-h"><h2>Board</h2><span class="spacer"></span><span class="faint" style="font-size:12px">Tap a pin to set it up</span></div>
+      <div class="board-wrap">
+        <div class="board" id="board">
+          <div class="hdr l" id="hdrL"></div>
+          <div class="pcb" aria-hidden="true">
+            <div class="module"><div class="ant"></div><b>ESP32-S3</b>WROOM-1<br>N16R8</div>
+            <div class="silk">ESP32-S3-DevKitC-1</div>
+            <div class="pcb-led"><i id="pcbLed"></i>RGB</div>
+            <div class="pcb-btns"><span>BOOT</span><span>RST</span></div>
+            <div class="usb"><span>USB</span><span>UART</span></div>
+          </div>
+          <div class="hdr r" id="hdrR"></div>
+        </div>
+        <div class="board-legend" aria-hidden="true">
+          <span><i style="background:var(--ok)"></i>Input</span>
+          <span><i style="background:var(--accent)"></i>Output / PWM</span>
+          <span><i style="background:var(--servo)"></i>Servo</span>
+          <span><i style="background:var(--ch1)"></i>Analog</span>
+          <span><i style="background:var(--i2c)"></i>I2C</span>
+          <span><i style="border:2px dashed var(--fg3)"></i>Reserved</span>
+        </div>
+      </div>
+    </div>
+    <div class="pins-side stack" id="pinsSide">
+      <div class="panel inspector" id="inspector" role="region" aria-label="Pin settings"></div>
+      <div class="panel" id="activePanel">
+        <div class="panel-h"><h2>Running now</h2><span class="spacer"></span><button class="btn sm ghost" type="button" id="allOffSmall">Turn all off</button></div>
+        <div id="activeBody"></div>
+      </div>
+    </div>
+  </div>
+  <div class="sheet-backdrop" id="sheetBackdrop"></div>
+</section>
+
+<section class="view" id="view-scope" role="tabpanel" aria-labelledby="tab-scope" hidden>
+  <div class="panel">
+    <div class="scope-bar">
+      <div class="legend" id="legend"></div>
+      <span style="flex:1"></span>
+      <div class="seg" id="winSeg" role="group" aria-label="Time window">
+        <button type="button" data-w="5">5 s</button><button type="button" data-w="10">10 s</button><button type="button" data-w="30">30 s</button><button type="button" data-w="60">60 s</button>
+      </div>
+      <div class="seg" id="scaleSeg" role="group" aria-label="Vertical scale">
+        <button type="button" data-s="auto">Auto</button><button type="button" data-s="full">Full range</button>
+      </div>
+      <label class="row" style="gap:6px"><span class="label">Rate</span>
+        <select class="select" id="rateSel" style="width:auto;padding:6px 8px"></select></label>
+      <button class="btn sm" type="button" id="runBtn"><svg aria-hidden="true"><use href="#i-pause"/></svg><span>Pause</span></button>
+      <button class="btn sm ghost" type="button" id="clearBtn">Clear</button>
+      <button class="btn sm ghost" type="button" id="csvBtn"><svg aria-hidden="true"><use href="#i-dl"/></svg>CSV</button>
+    </div>
+    <div class="scope-canvas-wrap" id="scopeWrap">
+      <canvas id="scope" aria-label="Live voltage graph"></canvas>
+      <div class="scope-tip" id="scopeTip" hidden></div>
+      <div class="empty" id="scopeEmpty" hidden><b>No analog channels yet</b>Set one of GPIO 1–10 to <em>Analog</em> on the Pins tab and it shows up here.<div style="margin-top:12px"><button class="btn primary" type="button" id="scopeGoPins">Open Pins</button></div></div>
+    </div>
+    <div class="tbl-wrap"><table class="scope-stats" id="scopeStats"></table></div>
+  </div>
+</section>
+
+<section class="view" id="view-i2c" role="tabpanel" aria-labelledby="tab-i2c" hidden>
+  <div class="i2c-layout">
+    <div class="stack">
+      <div class="panel">
+        <div class="panel-h"><h2>Bus</h2><span class="spacer"></span><span class="tag" id="busTag">Off</span></div>
+        <div class="panel-b stack">
+          <div class="grid2">
+            <label class="field"><span class="label">SDA (data)</span><select class="select" id="sdaSel"></select></label>
+            <label class="field"><span class="label">SCL (clock)</span><select class="select" id="sclSel"></select></label>
+          </div>
+          <div class="field"><span class="label">Speed</span>
+            <div class="seg full" id="speedSeg" role="group" aria-label="Bus speed">
+              <button type="button" data-hz="10000">10k</button><button type="button" data-hz="50000">50k</button><button type="button" data-hz="100000">100k</button><button type="button" data-hz="400000">400k</button>
+            </div>
+          </div>
+          <div class="row"><button class="btn primary" type="button" id="scanBtn"><svg aria-hidden="true"><use href="#i-scan"/></svg>Scan bus</button><button class="btn ghost" type="button" id="releaseBtn">Release pins</button></div>
+          <p class="hint">Wire it up: SDA→SDA, SCL→SCL, 3V3→VCC, GND→GND. Start at 100 kHz. Most breakout boards already carry pull-up resistors.</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><h2>Bus health</h2></div>
+        <div class="panel-b"><ul class="health" id="health"></ul></div>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="panel">
+        <div class="panel-h"><h2>Address map</h2><span class="spacer"></span><span class="faint num" style="font-size:12px" id="scanMeta"></span></div>
+        <div class="panel-b tbl-wrap"><div class="addr-grid" id="addrGrid" role="grid" aria-label="I2C addresses"></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><h2>Devices found</h2></div>
+        <div class="dev-list" id="devList"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><h2>Register tool</h2><span class="spacer"></span><span class="faint" style="font-size:12px">Hex values</span></div>
+        <div class="panel-b stack">
+          <div class="grid2" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+            <label class="field"><span class="label">Address</span><input class="input num" id="rwAddr" placeholder="3C" maxlength="4" autocomplete="off" spellcheck="false"></label>
+            <label class="field"><span class="label">Register</span><input class="input num" id="rwReg" placeholder="none" maxlength="4" autocomplete="off" spellcheck="false"></label>
+            <label class="field"><span class="label">Bytes</span><input class="input num" id="rwLen" type="number" min="1" max="32" value="1"></label>
+          </div>
+          <div class="row"><button class="btn primary" type="button" id="readBtn">Read</button>
+            <input class="input num" id="rwBytes" placeholder="Bytes to write, e.g. 6B 00" style="flex:1;min-width:150px" autocomplete="off" spellcheck="false">
+            <button class="btn" type="button" id="writeBtn">Write</button></div>
+          <div id="rwHint"></div>
+        </div>
+        <div class="log" id="i2cLog" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="view" id="view-system" role="tabpanel" aria-labelledby="tab-system" hidden>
+  <div class="sys-layout">
+    <div class="panel">
+      <div class="panel-h"><h2>Device</h2></div>
+      <div class="panel-b stack"><dl class="kv" id="devKv"></dl>
+        <div class="field"><span class="label">RGB status LED</span>
+          <div class="seg full" id="ledSeg" role="group" aria-label="Status LED pin">
+            <button type="button" data-led="38">GPIO 38</button><button type="button" data-led="48">GPIO 48</button><button type="button" data-led="-1">None</button>
+          </div>
+          <p class="hint">Match your board's pinout (look for "RGB_LED"). Changing it restarts the board and hands the other pin back to the bench.</p></div>
+        <div class="row"><button class="btn" type="button" id="rebootBtn"><svg aria-hidden="true"><use href="#i-restart"/></svg>Restart board</button></div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><h2>Network</h2><span class="spacer"></span><span class="tag" id="netTag">--</span></div>
+      <div class="panel-b"><dl class="kv" id="netKv"></dl></div>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><h2>Safety</h2></div>
+      <div class="panel-b stack">
+        <label class="switch"><input type="checkbox" id="fsToggle"><span class="track"></span><span>Failsafe</span></label>
+        <p class="hint">When this is on, every output turns off if no browser has been connected for 10 seconds. Good for motors, heaters and anything you shouldn't leave running.</p>
+        <p class="hint">The red <b>All off</b> button at the top always works, on every tab.</p>
+      </div>
+    </div>
+    <div class="panel span2">
+      <div class="panel-h"><h2>WiFi setup</h2><span class="spacer"></span><button class="btn sm" type="button" id="wifiScanBtn"><svg aria-hidden="true"><use href="#i-scan"/></svg>Scan</button></div>
+      <div class="panel-b stack">
+        <div class="net-list" id="netList"><div class="empty" style="padding:16px">Press Scan to find networks nearby.</div></div>
+        <div class="grid2">
+          <label class="field"><span class="label">Network name</span><input class="input" id="wifiSsid" autocomplete="off" spellcheck="false" maxlength="32"></label>
+          <label class="field"><span class="label">Password</span><input class="input" id="wifiPass" type="password" autocomplete="new-password" maxlength="63"></label>
+        </div>
+        <div class="grid2">
+          <label class="field"><span class="label">Device name</span><div class="input-unit"><input class="input" id="wifiHost" autocomplete="off" spellcheck="false" maxlength="31"><span>.local</span></div></label>
+          <div class="field" style="justify-content:flex-end"><label class="switch"><input type="checkbox" id="showPass"><span class="track"></span><span>Show password</span></label></div>
+        </div>
+        <div class="row"><button class="btn primary" type="button" id="wifiSaveBtn">Save and restart</button><button class="btn danger" type="button" id="wifiForgetBtn">Forget WiFi</button></div>
+        <p class="hint" id="wifiHint">After it restarts, BenchBuddy joins this network. If it can't, its own hotspot comes back so you're never locked out.</p>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><h2>Firmware update</h2></div>
+      <div class="panel-b stack">
+        <p class="hint">Flash a new build over WiFi. In PlatformIO, build, then pick <span class="num">.pio/build/bench/firmware.bin</span>.</p>
+        <input class="input" type="file" id="otaFile" accept=".bin,application/octet-stream">
+        <div class="progress" aria-hidden="true"><i id="otaBar"></i></div>
+        <div class="row"><button class="btn primary" type="button" id="otaBtn" disabled><svg aria-hidden="true"><use href="#i-up"/></svg>Upload and flash</button><span class="muted num" id="otaText" style="font-size:13px"></span></div>
+        <p class="hint">Outputs switch off during the update. The board restarts by itself when it's done.</p>
+      </div>
+    </div>
+    <div class="panel" style="grid-column:1/-1">
+      <div class="panel-h"><h2>Appearance</h2><span class="spacer"></span><span class="faint" style="font-size:12px">Saved on this device only</span></div>
+      <div class="panel-b"><div class="skin-cards" id="skinCards">
+        <button class="skin-card" type="button" data-skin="lab"><div class="pv" style="background:#0e1216"><i style="height:40%;background:#f4d03f"></i><i style="height:75%;background:#f472b6"></i><i style="height:55%;background:#60a5fa"></i><i style="height:90%;background:#3fd0e0"></i></div><div class="nm">Lab Instrument<span>Dark slate, scope-style channel colors</span></div></button>
+        <button class="skin-card" type="button" data-skin="studio"><div class="pv" style="background:#f1f3f6"><i style="height:50%;background:#c2255c"></i><i style="height:80%;background:#7048e8"></i><i style="height:35%;background:#b8860b"></i><i style="height:65%;background:#2b59e8"></i></div><div class="nm">Clean Studio<span>Bright and calm, for daylight benches</span></div></button>
+        <button class="skin-card" type="button" data-skin="deck"><div class="pv" style="background:#090705"><i style="height:85%;background:#ffb641"></i><i style="height:45%;background:#f2e6c4"></i><i style="height:60%;background:#4fe0d0"></i><i style="height:30%;background:#6ab7ff"></i></div><div class="nm">Cyberdeck<span>Amber terminal glow, sharp corners</span></div></button>
+      </div></div>
+    </div>
+  </div>
+</section>
+</main>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+</div>
+
+<script>
+window.BenchSim = function BenchSim(emit, opts) {
+  "use strict";
+  const CANDIDATES = [1,2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,21,38,39,40,41,42,47,48];
+  let ledPin = 38, PINS = [];
+  const RATES = [10,20,50,100,200];
+  const LIM = {analog:4,pwm:8,pwmTimers:4,counters:4,fMin:5,fMax:100000,usMin:400,usMax:2600};
+  const t0 = Date.now() - 3723000;
+  const now = () => Date.now() - t0;
+  const pins = new Map();
+  const counters = [false,false,false,false];
+  const i2c = {on:false, sda:8, scl:9, hz:100000};
+  function boot() {
+    PINS = CANDIDATES.filter(g => g !== ledPin);
+    pins.clear();
+    PINS.forEach(g => pins.set(g, {g, adc:g>=1&&g<=10, owner:"user", mode:"off", pull:"none", level:0, freq:1000, fa:0, duty:50, res:0,
+      us:1500, mn:500, mx:2500, usNow:1500, sweep:false, sp:2000, sc:1, counter:-1, count:0, hz:0, frac:0, snaps:[], buf:[]}));
+    counters.fill(false);
+    Object.assign(i2c, {on:false, sda:8, scl:9, hz:100000});
+  }
+  boot();
+  let rate = 50, failsafe = false, sampleAcc = 0, fanRpm = 0, lastTick = now();
+  let wifiScan = {state:"idle", nets:[]};
+  const regs = {0x68:{0x75:0x68,0x6B:0x40,0x1A:0x00,0x1B:0x00,0x1C:0x00}, 0x76:{0xD0:0x60,0xF4:0x00,0xF5:0x00,0xE0:0x00}, 0x3C:{}};
+  const label = {off:"Off",in:"Input",out:"Output",pwm:"PWM",servo:"Servo",adc:"Analog"};
+
+  function res(f) { const ratio = Math.floor(80000000 / f); let b = 1; while (b < 14 && Math.pow(2, b + 1) <= ratio) b++; return b; }
+  function actual(f, r) { const div = Math.round(80000000 / (f * Math.pow(2, r)) * 256) / 256; return Math.round(80000000 / (div * Math.pow(2, r))); }
+  function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+  function num(v) { if (typeof v === "boolean") return v ? 1 : 0; return typeof v === "number" && isFinite(v) ? v : null; }
+  function out(o) { setTimeout(() => emit(JSON.parse(JSON.stringify(o))), 4); }
+
+  function info() {
+    return {t:"hello", fw:"1.0.1", build:"Oct  4 2026 10:41:07", chip:"ESP32-S3", rev:2, cores:2, mhz:240, flash:16777216, psram:8388608,
+      sketch:1263104, sketchMax:6553600, reset:"Power on", pins:PINS.map(g => g <= 10 ? {g, adc:true} : {g}), limits:LIM, rates:RATES,
+      statusLed:ledPin, net:net()};
+  }
+  function net() {
+    return {mode:"wifi", host:"benchbuddy", apSsid:"BenchBuddy-7F3A", saved:"BenchNet", mac:"F4:12:FA:7F:3A:C8", ssid:"BenchNet",
+      ip:"192.168.1.87", rssi:-52 + Math.round(Math.sin(now() / 9000) * 4), ch:6};
+  }
+  function pinState(p) {
+    if (p.owner === "i2c") return {g:p.g, m:"i2c"};
+    const o = {g:p.g, m:p.mode};
+    if (p.mode === "in") { o.pull = p.pull; o.cnt = p.counter >= 0; }
+    if (p.mode === "out") o.v = p.level;
+    if (p.mode === "pwm") { o.f = p.freq; o.fa = p.fa; o.du = Math.round(p.duty * 10) / 10; o.r = p.res; }
+    if (p.mode === "servo") { o.us = p.us; o.mn = p.mn; o.mx = p.mx; o.sw = p.sweep; o.sp = p.sp; }
+    if (p.mode === "adc") o.sc = p.sc;
+    return o;
+  }
+  function state() {
+    return {t:"state", pins:[...pins.values()].filter(p => p.mode !== "off" || p.owner !== "user").map(pinState), i2c:{...i2c}, rate, fs:failsafe};
+  }
+  function sys() {
+    return {t:"sys", up:now(), heap:281000 + Math.round(Math.random() * 6000), heapMin:251344, heapSize:368640, psramFree:8247300,
+      temp:Math.round((41 + Math.sin(now() / 20000) * 1.6) * 10) / 10, clients:1, net:net()};
+  }
+  function err(msg, id) { const o = {t:"err", msg}; if (id !== undefined) o.id = id; out(o); }
+  function pwmUse(except) {
+    const list = [...pins.values()].filter(p => p !== except && (p.mode === "pwm" || p.mode === "servo"));
+    return {chans:list.length, timers:new Set(list.map(p => p.mode === "servo" ? "50/14" : p.freq + "/" + p.res))};
+  }
+  function release(p) {
+    if (p.counter >= 0) { counters[p.counter] = false; p.counter = -1; }
+    p.mode = "off"; p.buf = []; p.fa = 0; p.res = 0; p.snaps = []; p.hz = 0;
+  }
+  function setup(p, m) {
+    if (m === "in") {
+      const i = counters.indexOf(false);
+      if (i >= 0) { counters[i] = true; p.counter = i; p.count = 0; p.snaps = []; p.hz = 0; }
+      return null;
+    }
+    if (m === "pwm" || m === "servo") {
+      const u = pwmUse(p), key = m === "servo" ? "50/14" : p.freq + "/" + res(p.freq);
+      if (u.chans >= LIM.pwm || (!u.timers.has(key) && u.timers.size >= LIM.pwmTimers))
+        return "No free PWM channel. You can run 8 PWM/servo outputs at up to 4 different frequencies.";
+      if (m === "pwm") { p.res = res(p.freq); p.fa = actual(p.freq, p.res); }
+      else { p.res = 14; p.fa = 50; p.usNow = p.us; }
+    }
+    return null;
+  }
+  const CFG = ["pull","level","freq","duty","us","mn","mx","sweep","sp","sc"];
+  function pinCmd(c) {
+    const p = pins.get(c.g);
+    if (!p) return "GPIO " + (typeof c.g === "number" ? c.g : -1) + " isn't available on the bench.";
+    if (p.owner !== "user") return "GPIO " + p.g + " belongs to the I2C bus right now. Release the bus on the I2C tab first.";
+    let target = p.mode;
+    if (typeof c.m === "string") { if (!(c.m in label)) return "Unknown pin mode \"" + c.m + "\"."; target = c.m; }
+    const n = {}; CFG.forEach(k => n[k] = p[k]);
+    if (typeof c.pull === "string") n.pull = c.pull === "up" || c.pull === "down" ? c.pull : "none";
+    let v;
+    if ((v = num(c.v)) !== null) n.level = v !== 0 ? 1 : 0;
+    if ((v = num(c.f)) !== null) n.freq = Math.round(clamp(v, LIM.fMin, LIM.fMax));
+    if ((v = num(c.du)) !== null) n.duty = clamp(v, 0, 100);
+    if ((v = num(c.mn)) !== null) n.mn = Math.round(clamp(v, LIM.usMin, LIM.usMax - 100));
+    if ((v = num(c.mx)) !== null) n.mx = Math.round(clamp(v, LIM.usMin + 100, LIM.usMax));
+    if (n.mx < n.mn + 100) n.mx = n.mn + 100;
+    if ((v = num(c.us)) !== null) n.us = Math.round(clamp(v, LIM.usMin, LIM.usMax));
+    n.us = clamp(n.us, n.mn, n.mx);
+    if ((v = num(c.sw)) !== null) n.sweep = v !== 0;
+    if ((v = num(c.sp)) !== null) n.sp = Math.round(clamp(v, 300, 20000));
+    if ((v = num(c.sc)) !== null && v >= 0.01 && v <= 1000) n.sc = v;
+    const change = target !== p.mode;
+    if (target === "adc" && !p.adc) return "Only GPIO 1-10 can measure voltage (they're on ADC1, which keeps working with WiFi on).";
+    if (target === "adc" && change && [...pins.values()].filter(x => x.mode === "adc").length >= LIM.analog)
+      return "The scope has 4 channels. Set another analog pin to Off first.";
+    if (change || (target === "pwm" && n.freq !== p.freq)) {
+      const prev = {}; CFG.forEach(k => prev[k] = p[k]); const prevMode = p.mode;
+      release(p); CFG.forEach(k => p[k] = n[k]);
+      const e = setup(p, target);
+      if (e) { release(p); CFG.forEach(k => p[k] = prev[k]); if (prevMode !== "off" && !setup(p, prevMode)) p.mode = prevMode; return e; }
+      p.mode = target;
+      return null;
+    }
+    if (target === "in") { p.pull = n.pull; if (c.reset) { p.count = 0; p.snaps = []; p.hz = 0; } }
+    else if (target === "out") p.level = n.level;
+    else if (target === "pwm") p.duty = n.duty;
+    else if (target === "servo") { ["us","mn","mx","sp","sweep"].forEach(k => p[k] = n[k]); if (!p.sweep) p.usNow = p.us; }
+    else if (target === "adc") p.sc = n.sc;
+    else CFG.forEach(k => p[k] = n[k]);
+    return null;
+  }
+
+  function claim(g) {
+    const p = pins.get(g);
+    if (!p) return "GPIO " + g + " isn't available on the bench.";
+    if (p.owner === "i2c") return null;
+    if (p.mode !== "off") return "GPIO " + g + " is set to " + label[p.mode] + ". Set it to Off first.";
+    p.owner = "i2c"; return null;
+  }
+  function unclaim(g) { const p = pins.get(g); if (p && p.owner === "i2c") { p.owner = "user"; p.mode = "off"; } }
+  function i2cCfg(sda, scl, hz) {
+    if (![10000,50000,100000,400000].includes(hz)) return "Pick 10, 50, 100 or 400 kHz.";
+    if (sda === scl) return "SDA and SCL need to be different pins.";
+    if (!pins.has(sda) || !pins.has(scl)) return "Pick SDA and SCL from the bench pins.";
+    if (i2c.on && sda === i2c.sda && scl === i2c.scl) { i2c.hz = hz; return null; }
+    const sdaOurs = i2c.on && (sda === i2c.sda || sda === i2c.scl);
+    let e = claim(sda); if (e) return e;
+    e = claim(scl); if (e) { if (!sdaOurs) unclaim(sda); return e; }
+    if (i2c.on) { if (i2c.sda !== sda && i2c.sda !== scl) unclaim(i2c.sda); if (i2c.scl !== sda && i2c.scl !== scl) unclaim(i2c.scl); }
+    Object.assign(i2c, {on:true, sda, scl, hz});
+    return null;
+  }
+  function devices() { return i2c.sda === 8 && i2c.scl === 9 ? [0x3C, 0x68, 0x76] : []; }
+  function regRead(a, r) {
+    const map = regs[a] || {};
+    if (a === 0x3C) return 0x43;
+    if (a === 0x68 && r >= 0x3B && r <= 0x48) return Math.floor(Math.random() * 256);
+    if (a === 0x76 && r >= 0xF7 && r <= 0xFE) return Math.floor(Math.random() * 256);
+    if (r in map) return map[r];
+    return ((a * 31 + r * 17) & 0xff);
+  }
+
+  function signal(p, t) {
+    const s = t / 1000;
+    if (p.g === 4) return 1650 + 1050 * Math.sin(s / 1.15) * 0.75 + 260 * Math.sin(s / 0.37) + (Math.random() - 0.5) * 12;
+    if (p.g === 5) { const dip = (s % 7) < 0.35 ? 95 : 0; return 2410 - dip + 6 * Math.sin(s * 9) + (Math.random() - 0.5) * 10; }
+    const k = p.g * 0.73;
+    return 900 + 600 * Math.sin(s / (1.5 + (p.g % 5))) + 140 * Math.sin(s * k) + (Math.random() - 0.5) * 18;
+  }
+  function inputRate(p) {
+    if (p.g === 6) return fanRpm * 2 / 60;
+    if (p.pull === "none") return 12 + 8 * Math.sin(now() / 3000);
+    return 0;
+  }
+  function tick() {
+    const t = now(), dt = Math.max(1, t - lastTick);
+    lastTick = t;
+    const fanPwm = pins.get(7);
+    const target = fanPwm.mode === "pwm" ? 450 + 2550 * fanPwm.duty / 100 : 0;
+    fanRpm += (target - fanRpm) * Math.min(1, dt / 1400);
+    sampleAcc += rate * dt / 1000;
+    const n = Math.floor(sampleAcc); sampleAcc -= n;
+    const live = {t:"live", up:t, hz:rate, a:{}, d:{}, c:{}, s:{}};
+    for (const p of pins.values()) {
+      if (p.owner !== "user") continue;
+      if (p.mode === "adc") {
+        const arr = [];
+        for (let i = n - 1; i >= 0; i--) arr.push(Math.round(clamp(signal(p, t - i * 1000 / rate), 0, 3150)));
+        live.a[p.g] = arr;
+      } else if (p.mode === "in") {
+        const r = inputRate(p);
+        if (p.counter >= 0) {
+          p.frac += r * dt / 1000; const e = Math.floor(p.frac); p.frac -= e; p.count += e;
+          p.snaps.push([t, p.count]); while (p.snaps.length > 11) p.snaps.shift();
+          const a = p.snaps[0], b = p.snaps[p.snaps.length - 1];
+          p.hz = b[0] > a[0] ? (b[1] - a[1]) * 1000 / (b[0] - a[0]) : 0;
+          live.c[p.g] = [p.count, Math.round(p.hz * 10) / 10];
+        }
+        live.d[p.g] = r > 0 ? (Math.random() < 0.5 ? 1 : 0) : (p.pull === "down" ? 0 : 1);
+      } else if (p.mode === "out") {
+        live.d[p.g] = p.level;
+      } else if (p.mode === "servo") {
+        if (p.sweep) {
+          const per = Math.max(300, p.sp), ph = (t % per) / per, tri = ph < 0.5 ? ph * 2 : 2 - ph * 2;
+          p.usNow = Math.round(p.mn + tri * (p.mx - p.mn));
+        }
+        live.s[p.g] = p.usNow;
+      }
+    }
+    emit(live);
+  }
+
+  function backlog() {
+    const t = now(), n = rate * 12, live = {t:"live", up:t, hz:rate, a:{}, d:{}, c:{}, s:{}};
+    for (const p of pins.values()) {
+      if (p.owner !== "user" || p.mode !== "adc") continue;
+      const arr = [];
+      for (let i = n - 1; i >= 0; i--) arr.push(Math.round(clamp(signal(p, t - i * 1000 / rate), 0, 3150)));
+      live.a[p.g] = arr;
+    }
+    emit(live);
+  }
+  function send(c) {
+    if (!c || typeof c !== "object") return;
+    const id = c.id;
+    switch (c.t) {
+      case "hello": out(info()); out(state()); out(sys()); setTimeout(backlog, 10); return;
+      case "ping": return;
+      case "pin": { const e = pinCmd(c); if (e) err(e, id); out(state()); return; }
+      case "alloff": for (const p of pins.values()) if (p.owner === "user" && p.mode !== "off") release(p); out(state()); return;
+      case "rate": if (!RATES.includes(c.hz)) err("Pick 10, 20, 50, 100 or 200 samples per second.", id); else rate = c.hz; out(state()); return;
+      case "failsafe": failsafe = !!c.on; out(state()); return;
+      case "led": {
+        const pin = typeof c.pin === "number" ? c.pin : -2;
+        if (pin !== -1 && pin !== 38 && pin !== 48) { err("Pick GPIO 38, GPIO 48 or none.", id); return; }
+        if (pin === ledPin) return;
+        ledPin = pin;
+        out({t:"notice", msg:pin < 0 ? "Status LED turned off. Restarting to apply." : "Status LED moved to GPIO " + pin + ". Restarting to apply."});
+        setTimeout(() => { boot(); rate = 50; out(info()); out(state()); out(sys()); }, 900);
+        return;
+      }
+      case "i2c_cfg": { const e = i2cCfg(c.sda ?? -1, c.scl ?? -1, c.hz ?? 100000); if (e) err(e, id); out(state()); return; }
+      case "i2c_off": if (i2c.on) { unclaim(i2c.sda); unclaim(i2c.scl); i2c.on = false; } out(state()); return;
+      case "i2c_scan": {
+        const r = {t:"i2c_scan", sda:i2c.sda, scl:i2c.scl, hz:i2c.hz};
+        if (id !== undefined) r.id = id;
+        if (!i2c.on) { const e = i2cCfg(i2c.sda, i2c.scl, i2c.hz); if (e) { r.ok = false; r.err = e; out(r); out(state()); return; } }
+        const found = devices();
+        Object.assign(r, {bus:{pullSda:found.length > 0, pullScl:found.length > 0, sda:true, scl:true}, found, ok:true, ms:found.length ? 38 : 31});
+        setTimeout(() => { out(r); out(state()); }, 180);
+        return;
+      }
+      case "i2c_read": case "i2c_write": {
+        const a = c.a;
+        if (typeof a !== "number" || a < 8 || a > 0x77) { err("Pick an address between 0x08 and 0x77.", id); return; }
+        const r = {t:"i2c_rw"}; if (id !== undefined) r.id = id;
+        const present = i2c.on || !i2cCfg(i2c.sda, i2c.scl, i2c.hz);
+        if (c.t === "i2c_read") {
+          const reg = clamp(typeof c.r === "number" ? c.r : -1, -1, 255), len = clamp(typeof c.n === "number" ? c.n : 1, 1, 32);
+          Object.assign(r, {op:"read", a, r:reg, n:len});
+          if (!present || !devices().includes(a)) { r.ok = false; r.err = reg >= 0 ? "Read failed. The device didn't answer that register." : "No ACK. Nothing answered at that address."; }
+          else { r.ok = true; r.data = []; for (let i = 0; i < len; i++) r.data.push(regRead(a, reg < 0 ? i : (reg + i) & 0xff)); }
+        } else {
+          const b = Array.isArray(c.b) ? c.b : [];
+          if (!b.length || b.length > 32 || b.some(x => typeof x !== "number" || x < 0 || x > 255 || x % 1)) { err("Write needs 1-32 bytes, each 00-FF.", id); return; }
+          Object.assign(r, {op:"write", a, n:b.length});
+          if (!present || !devices().includes(a)) { r.ok = false; r.err = "No ACK. Nothing answered at that address."; }
+          else { r.ok = true; if (b.length >= 2 && regs[a]) for (let i = 1; i < b.length; i++) regs[a][(b[0] + i - 1) & 0xff] = b[i]; }
+        }
+        out(r); out(state());
+        return;
+      }
+      default: err("Unknown command \"" + c.t + "\".", id);
+    }
+  }
+
+  function http(method, path, body) {
+    return new Promise(resolve => setTimeout(() => {
+      if (path === "/api/info") return resolve(info());
+      if (path.startsWith("/api/wifi/scan")) {
+        if (path.includes("fresh")) {
+          wifiScan = {state:"scanning", nets:[]};
+          setTimeout(() => { wifiScan = {state:"done", nets:[
+            {ssid:"BenchNet", rssi:-51, open:false, ch:6}, {ssid:"Workshop-2G", rssi:-63, open:false, ch:11},
+            {ssid:"Garage-Ext", rssi:-69, open:false, ch:1}, {ssid:"NETGEAR42", rssi:-74, open:false, ch:3},
+            {ssid:"CoffeeShop Guest", rssi:-81, open:true, ch:9}, {ssid:"DIRECT-7F-Printer", rssi:-84, open:false, ch:6}]}; }, 1600);
+        }
+        return resolve(JSON.parse(JSON.stringify(wifiScan)));
+      }
+      if (path === "/api/wifi") {
+        const ssid = (body && body.get("ssid")) || "", pass = (body && body.get("pass")) || "";
+        if (!ssid || ssid.length > 32) return resolve({ok:false, err:"Network name must be 1-32 characters."});
+        if (pass && (pass.length < 8 || pass.length > 63)) return resolve({ok:false, err:"WiFi passwords are 8-63 characters (or leave it blank for an open network)."});
+        return resolve({ok:true});
+      }
+      resolve({ok:true});
+    }, 120));
+  }
+
+  if (opts && opts.clean) return {send, http};
+  pinCmd({g:4, m:"adc"});
+  pinCmd({g:5, m:"adc", sc:5});
+  pinCmd({g:6, m:"in", pull:"up"});
+  pinCmd({g:7, m:"pwm", f:25000, du:40});
+  pinCmd({g:15, m:"servo", us:1500});
+  pinCmd({g:16, m:"out", v:1});
+  i2cCfg(8, 9, 100000);
+  fanRpm = 1400;
+  setInterval(tick, 50);
+  setInterval(() => emit(sys()), 2000);
+  return {send, http};
+};
+</script>
+
+<script>
+(function () {
+"use strict";
+
+const SVGNS = "http://www.w3.org/2000/svg";
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => [...(r || document).querySelectorAll(s)];
+
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  if (attrs) {
+    for (const k in attrs) {
+      const v = attrs[k];
+      if (v == null || v === false) continue;
+      if (k === "class") el.className = v;
+      else if (k === "style") el.style.cssText = v;
+      else if (k.startsWith("on") && typeof v === "function") el.addEventListener(k.slice(2), v);
+      else if (k === "text") el.textContent = v;
+      else el.setAttribute(k, v === true ? "" : String(v));
+    }
+  }
+  for (const kid of kids.flat(3)) {
+    if (kid == null || kid === false) continue;
+    el.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+  }
+  return el;
+}
+function icon(name) {
+  const s = document.createElementNS(SVGNS, "svg");
+  s.setAttribute("aria-hidden", "true");
+  const u = document.createElementNS(SVGNS, "use");
+  u.setAttribute("href", "#i-" + name);
+  s.append(u);
+  return s;
+}
+function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+function hex2(n) { return (n < 16 ? "0" : "") + n.toString(16).toUpperCase(); }
+function fmtV(v) {
+  if (v == null || !isFinite(v)) return "--";
+  const a = Math.abs(v);
+  return v.toFixed(a < 10 ? 3 : a < 100 ? 2 : 1);
+}
+function fmtHz(hz) {
+  if (hz == null || !isFinite(hz)) return "--";
+  if (hz < 1000) return hz.toFixed(hz < 10 ? 2 : 1) + " Hz";
+  if (hz < 1e6) return (hz / 1000).toFixed(hz < 1e4 ? 3 : 2) + " kHz";
+  return (hz / 1e6).toFixed(3) + " MHz";
+}
+function fmtInt(n) { return Math.round(n).toLocaleString("en-US"); }
+function fmtBytes(b) {
+  if (b == null) return "--";
+  if (b >= 1048576) return (b / 1048576).toFixed(b >= 10485760 ? 0 : 2).replace(/\.00$/, "") + " MB";
+  if (b >= 1024) return Math.round(b / 1024) + " KB";
+  return b + " B";
+}
+function fmtUp(ms) {
+  if (ms == null) return "--";
+  const s = Math.floor(ms / 1000), d = Math.floor(s / 86400), hh = Math.floor(s % 86400 / 3600), mm = Math.floor(s % 3600 / 60), ss = s % 60;
+  if (d) return d + "d " + hh + "h";
+  if (hh) return hh + "h " + String(mm).padStart(2, "0") + "m";
+  return mm + "m " + String(ss).padStart(2, "0") + "s";
+}
+function throttle(fn, ms) {
+  let last = 0, timer = null, args = null;
+  return function () {
+    args = arguments;
+    const wait = ms - (performance.now() - last);
+    if (wait <= 0) { last = performance.now(); fn.apply(null, args); args = null; }
+    else if (!timer) timer = setTimeout(() => { timer = null; last = performance.now(); if (args) { fn.apply(null, args); args = null; } }, wait);
+  };
+}
+function store(key, val) {
+  try { if (val === undefined) return localStorage.getItem(key); localStorage.setItem(key, val); } catch (e) { }
+  return null;
+}
+
+const LEFT = ["3V3", "3V3", "RST", 4, 5, 6, 7, 15, 16, 17, 18, 8, 3, 46, 9, 10, 11, 12, 13, 14, "5V", "GND"];
+const RIGHT = ["GND", 43, 44, 1, 2, 42, 41, 40, 39, 38, 37, 36, 35, 0, 45, 48, 47, 21, 20, 19, "GND", "GND"];
+const DEFAULT_PINS = [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 21, 39, 40, 41, 42, 47, 48];
+const RESERVED = {
+  0: ["BOOT", "Boot button", "A strapping pin. Held low at power-up it puts the chip into flash mode, so BenchBuddy leaves it alone."],
+  3: ["STRAP", "Strapping pin", "Picks the JTAG source while the chip boots. Left alone so the board always starts the same way."],
+  45: ["STRAP", "Strapping pin", "Sets the flash memory voltage at boot. Driving it high during power-up can stop the board from starting."],
+  46: ["STRAP", "Strapping pin", "Controls boot mode and boot messages. Left alone for reliable starts."],
+  19: ["USB", "USB D−", "Data line for the native USB port. Using it would cut your USB connection."],
+  20: ["USB", "USB D+", "Data line for the native USB port. Using it would cut your USB connection."],
+  43: ["UART", "UART0 TX", "Serial console output on the UART/COM USB port. BenchBuddy prints its log here."],
+  44: ["UART", "UART0 RX", "Serial console input from the UART/COM USB port."],
+  35: ["PSRAM", "Octal PSRAM", "Wired to the 8 MB PSRAM inside the N16R8 module. Not usable."],
+  36: ["PSRAM", "Octal PSRAM", "Wired to the 8 MB PSRAM inside the N16R8 module. Not usable."],
+  37: ["PSRAM", "Octal PSRAM", "Wired to the 8 MB PSRAM inside the N16R8 module. Not usable."]
+};
+const LED_INFO = ["LED", "RGB status LED", "Drives the onboard RGB LED. Blinking blue: connecting. Green: on your WiFi. Purple: hotspot mode. Blinking white: updating. Blinking red: failsafe tripped."];
+const POWER = {
+  "3V3": ["3.3 V out", "Power for sensors and small modules. After the ESP32's own draw there's roughly 300 mA to spare."],
+  "5V": ["5 V", "Comes straight from USB or the expansion base. Good for servos and 5 V modules. Never wire 5 V to a GPIO pin."],
+  "GND": ["Ground", "Connect your device's ground here so both sides agree on what 0 V is. Shared ground fixes most weird readings."],
+  "RST": ["Reset (EN)", "Pull this low to restart the board. Same as pressing RST."]
+};
+const MODES = [["off", "Off"], ["in", "Input"], ["out", "Output"], ["pwm", "PWM"], ["servo", "Servo"], ["adc", "Analog"]];
+const MODE_LABEL = Object.fromEntries(MODES);
+const CH_VARS = ["--ch1", "--ch2", "--ch3", "--ch4"];
+const CAP = 12800;
+const DIVIDERS = [
+  ["Direct", 1, "Pin straight to the signal, 0–3.1 V"],
+  ["10k + 10k", 2, "Halves the voltage, up to about 6 V"],
+  ["30k + 7.5k", 5, "The common blue 0–25 V sensor module"],
+  ["100k + 22k", 122 / 22, "Up to about 17 V, light load on the circuit"]
+];
+const PPR = [1, 2, 4];
+
+const KNOWN = {
+  0x0C: [["AK8963 magnetometer (inside MPU-9250)"]],
+  0x0D: [["QMC5883L compass", 0x0D, 1, "FF"]],
+  0x10: [["VEML7700 light sensor"]],
+  0x18: [["MCP9808 temperature", 0x07, 2, "04 00"], ["LIS3DH accelerometer", 0x0F, 1, "33"]],
+  0x19: [["LIS3DH / LSM303 accelerometer", 0x0F, 1, "33"]],
+  0x1D: [["ADXL345 accelerometer (alt address)", 0x00, 1, "E5"]],
+  0x1E: [["HMC5883L compass", 0x0A, 3, "48 34 33"]],
+  0x20: [["MCP23017 / PCF8574 I/O expander"]], 0x21: [["MCP23017 / PCF8574 I/O expander"]],
+  0x22: [["MCP23017 / PCF8574 I/O expander"]], 0x24: [["MCP23017 / PCF8574 I/O expander"]],
+  0x25: [["MCP23017 / PCF8574 I/O expander"]], 0x26: [["MCP23017 / PCF8574 I/O expander"]],
+  0x23: [["BH1750 light sensor"], ["MCP23017 / PCF8574 I/O expander"]],
+  0x27: [["PCF8574 LCD backpack (16×2 / 20×4)"]],
+  0x28: [["BNO055 orientation sensor", 0x00, 1, "A0"]],
+  0x29: [["VL53L0X distance sensor", 0xC0, 1, "EE"], ["TCS34725 color sensor", 0x92, 1, "44 or 4D"]],
+  0x36: [["AS5600 magnetic encoder"]],
+  0x38: [["AHT10 / AHT20 temperature + humidity"]],
+  0x39: [["APDS-9960 gesture sensor", 0x92, 1, "AB"], ["TSL2561 light sensor"]],
+  0x3C: [["SSD1306 / SH1106 OLED display"]],
+  0x3D: [["SSD1306 OLED (alt address)"]],
+  0x3F: [["PCF8574A LCD backpack"]],
+  0x40: [["INA219 current sensor", 0x00, 2, "39 9F"], ["PCA9685 16-ch PWM driver", 0x00, 1, "11"], ["HTU21D / Si7021 humidity"]],
+  0x41: [["INA219 current sensor (alt)", 0x00, 2, "39 9F"]],
+  0x44: [["SHT31 / SHT4x temperature + humidity"]],
+  0x45: [["SHT31 (alt address)"]],
+  0x48: [["ADS1115 16-bit ADC", 0x01, 2, "85 83"], ["TMP102 temperature / PCF8591 ADC"]],
+  0x49: [["ADS1115 ADC (ADDR→VDD)", 0x01, 2, "85 83"]],
+  0x4A: [["ADS1115 ADC (ADDR→SDA)", 0x01, 2, "85 83"], ["BNO080 / BNO085 IMU"]],
+  0x4B: [["ADS1115 ADC (ADDR→SCL)", 0x01, 2, "85 83"], ["BNO080 / BNO085 IMU"]],
+  0x50: [["AT24C EEPROM"]],
+  0x53: [["ADXL345 accelerometer", 0x00, 1, "E5"]],
+  0x57: [["AT24C32 EEPROM (on DS3231 modules)"]],
+  0x5A: [["MLX90614 IR thermometer"], ["MPR121 touch controller"], ["CCS811 air quality", 0x20, 1, "81"]],
+  0x5B: [["CCS811 air quality", 0x20, 1, "81"]],
+  0x5C: [["AM2320 temperature + humidity"]],
+  0x5D: [["GT911 touch controller"]],
+  0x60: [["Si5351 clock generator"], ["MPL3115A2 altimeter", 0x0C, 1, "C4"]],
+  0x61: [["SCD30 CO₂ sensor"]],
+  0x62: [["SCD40 / SCD41 CO₂ sensor"]],
+  0x68: [["MPU-6050 / MPU-9250 IMU", 0x75, 1, "68 MPU-6050 · 70 MPU-6500 · 71 MPU-9250"], ["DS3231 / DS1307 real-time clock"], ["ICM-20948 IMU", 0x00, 1, "EA"]],
+  0x69: [["MPU-6050 (AD0 pulled high)", 0x75, 1, "68"], ["ICM-20948 IMU (alt)", 0x00, 1, "EA"]],
+  0x6A: [["LSM6DS3 / LSM6DSOX IMU", 0x0F, 1, "69 LSM6DS3 · 6C LSM6DSOX"]],
+  0x6B: [["LSM6DS3 / LSM6DSOX IMU (alt)", 0x0F, 1, "69 LSM6DS3 · 6C LSM6DSOX"]],
+  0x70: [["TCA9548A I2C multiplexer"], ["HT16K33 LED matrix driver"]],
+  0x76: [["BME280 / BMP280 / BME680", 0xD0, 1, "60 BME280 · 58 BMP280 · 61 BME680"]],
+  0x77: [["BME280 / BMP280 / BMP180 (alt)", 0xD0, 1, "60 BME280 · 58 BMP280 · 55 BMP180"]]
+};
+
+class Ring {
+  constructor(cap) { this.cap = cap; this.t = new Float64Array(cap); this.v = new Float32Array(cap); this.n = 0; this.head = 0; }
+  push(t, v) { this.t[this.head] = t; this.v[this.head] = v; this.head = (this.head + 1) % this.cap; if (this.n < this.cap) this.n++; }
+  idx(i) { return (this.head - this.n + i + this.cap * 2) % this.cap; }
+  clear() { this.n = 0; this.head = 0; }
+  lastV() { return this.n ? this.v[this.idx(this.n - 1)] : null; }
+  firstAt(t) {
+    let lo = 0, hi = this.n;
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (this.t[this.idx(mid)] < t) lo = mid + 1; else hi = mid; }
+    return lo;
+  }
+}
+
+const S = {
+  mode: "connecting",
+  link: null,
+  sim: null,
+  info: null,
+  pins: new Map(),
+  i2c: { on: false, sda: 8, scl: 9, hz: 100000 },
+  rate: 50,
+  fs: false,
+  sys: null,
+  live: { a: {}, d: {}, c: {}, s: {} },
+  lastUp: 0,
+  selected: null,
+  tab: "pins",
+  slots: new Map(),
+  series: new Map(),
+  digital: new Map(),
+  scope: { running: true, win: 10, scale: "auto", pausedAt: 0, hoverX: null },
+  scan: null,
+  scanAuto: false,
+  i2cLocal: { sda: 8, scl: 9, hz: 100000 },
+  i2cLog: [],
+  ppr: new Map(),
+  wifiNets: null
+};
+
+function toast(msg, type, ms) {
+  const box = $("#toasts");
+  const close = h("button", { type: "button", "aria-label": "Dismiss" }, "×");
+  const el = h("div", { class: "toast " + (type || ""), role: type === "err" ? "alert" : "status" }, h("div", null, msg), close);
+  const kill = () => { if (el.parentNode) el.remove(); };
+  close.addEventListener("click", kill);
+  box.append(el);
+  while (box.children.length > 4) box.firstChild.remove();
+  setTimeout(kill, ms || (type === "err" ? 6500 : 4200));
+}
+
+class WsLink {
+  constructor(onMsg, onState) {
+    this.onMsg = onMsg; this.onState = onState; this.retry = 0; this.ws = null; this.lastRx = 0;
+    this.connect();
+    setInterval(() => {
+      if (this.ready()) {
+        this.send({ t: "ping" });
+        if (Date.now() - this.lastRx > 7000) { try { this.ws.close(); } catch (e) { } }
+      }
+    }, 3000);
+  }
+  connect() {
+    this.onState(this.retry ? "offline" : "connecting");
+    const proto = location.protocol === "https:" ? "wss://" : "ws://";
+    let ws;
+    try { ws = new WebSocket(proto + location.host + "/ws"); } catch (e) { return this.later(); }
+    this.ws = ws;
+    ws.onopen = () => { this.retry = 0; this.lastRx = Date.now(); this.onState("live"); };
+    ws.onmessage = (e) => {
+      this.lastRx = Date.now();
+      let m; try { m = JSON.parse(e.data); } catch (err) { return; }
+      this.onMsg(m);
+    };
+    ws.onclose = () => { if (this.ws === ws) { this.ws = null; this.later(); } };
+    ws.onerror = () => { try { ws.close(); } catch (e) { } };
+  }
+  later() {
+    this.retry++;
+    this.onState("offline");
+    setTimeout(() => this.connect(), Math.min(5000, 500 * Math.pow(2, Math.min(this.retry, 4))));
+  }
+  ready() { return !!this.ws && this.ws.readyState === 1; }
+  send(o) { if (this.ready()) this.ws.send(JSON.stringify(o)); }
+}
+
+class SimLink {
+  constructor(onMsg, onState) {
+    S.sim = window.BenchSim(onMsg);
+    onState("demo");
+    setTimeout(() => S.sim.send({ t: "hello" }), 30);
+  }
+  ready() { return true; }
+  send(o) { S.sim.send(JSON.parse(JSON.stringify(o))); }
+}
+
+const api = {
+  async get(path) {
+    if (S.mode === "demo") return S.sim.http("GET", path);
+    const r = await fetch(path, { cache: "no-store" });
+    return r.json();
+  },
+  async post(path, data) {
+    const body = new URLSearchParams(data || {});
+    if (S.mode === "demo") return S.sim.http("POST", path, body);
+    const r = await fetch(path, { method: "POST", body });
+    try { return await r.json(); } catch (e) { return { ok: r.ok }; }
+  }
+};
+
+let cmdSeq = 1;
+function cmd(o) {
+  if (!S.link || !S.link.ready()) { toast("Not connected to the board right now.", "err"); return false; }
+  o.id = cmdSeq++;
+  S.link.send(o);
+  return true;
+}
+function pinCmd(g, params) { return cmd(Object.assign({ t: "pin", g }, params)); }
+const pinCmdThrottled = throttle(pinCmd, 70);
+
+function setConn(state) {
+  if (S.mode === "demo" && state !== "demo") return;
+  S.mode = state;
+  const el = $("#conn");
+  el.dataset.s = state;
+  $("#connText").textContent = { live: "Live", connecting: "Connecting", offline: "Reconnecting", demo: "Demo" }[state] || state;
+  $("#demoBar").hidden = state !== "demo";
+  renderHeader();
+}
+
+function onMessage(m) {
+  switch (m.t) {
+    case "hello": onHello(m); break;
+    case "state": onState(m); break;
+    case "live": onLive(m); break;
+    case "sys": S.sys = m; renderHeader(); if (S.tab === "system") renderSystem(); break;
+    case "err": toast(m.msg, "err"); break;
+    case "notice": toast(m.msg, "info", 10000); break;
+    case "i2c_scan": onScan(m); break;
+    case "i2c_rw": onRw(m); break;
+  }
+}
+
+function onHello(m) {
+  const firstInfo = !S.info;
+  const pinsChanged = !S.info || JSON.stringify(S.info.pins) !== JSON.stringify(m.pins) || S.info.statusLed !== m.statusLed;
+  S.info = m;
+  if (pinsChanged) buildBoard();
+  fillRates();
+  fillI2cSelects();
+  if (firstInfo) prefillWifi();
+  renderHeader();
+  renderSystem();
+}
+
+function onState(m) {
+  const prevKey = S.selected != null ? inspKey(S.selected) : null;
+  S.pins = new Map((m.pins || []).map(p => [p.g, p]));
+  S.i2c = m.i2c || S.i2c;
+  S.rate = m.rate || S.rate;
+  S.fs = !!m.fs;
+  const analog = [...S.pins.values()].filter(p => p.m === "adc").map(p => p.g).sort((a, b) => a - b);
+  for (const g of [...S.slots.keys()]) if (!analog.includes(g)) { S.slots.delete(g); S.series.delete(g); }
+  for (const g of analog) {
+    if (S.slots.has(g)) continue;
+    const used = new Set(S.slots.values());
+    for (let i = 0; i < 4; i++) if (!used.has(i)) { S.slots.set(g, i); break; }
+  }
+  for (const g of [...S.digital.keys()]) { const p = S.pins.get(g); if (!p || (p.m !== "in" && p.m !== "out")) S.digital.delete(g); }
+  if (S.i2c.on) S.i2cLocal = { sda: S.i2c.sda, scl: S.i2c.scl, hz: S.i2c.hz };
+  renderBoard();
+  renderInspector(prevKey !== (S.selected != null ? inspKey(S.selected) : null));
+  renderActive();
+  renderScopeChrome();
+  renderI2c();
+  updateCounts();
+  const fs = $("#fsToggle"); if (fs) fs.checked = S.fs;
+  $("#rateSel").value = String(S.rate);
+}
+
+function onLive(m) {
+  if (S.lastUp && m.up + 2000 < S.lastUp) { S.series.forEach(r => r.clear()); S.digital.clear(); }
+  S.lastUp = m.up;
+  const period = 1000 / (m.hz || S.rate || 50);
+  for (const k in m.a) {
+    const g = +k, arr = m.a[k];
+    let r = S.series.get(g);
+    if (!r) { r = new Ring(CAP); S.series.set(g, r); }
+    for (let i = 0; i < arr.length; i++) r.push(m.up - (arr.length - 1 - i) * period, arr[i]);
+    if (arr.length) S.live.a[g] = arr[arr.length - 1];
+  }
+  for (const k in m.d) {
+    const g = +k, v = m.d[k];
+    let list = S.digital.get(g);
+    if (!list) { list = []; S.digital.set(g, list); }
+    if (!list.length || list[list.length - 1][1] !== v) list.push([m.up, v]);
+    while (list.length > 2 && list[1][0] < m.up - 61000) list.shift();
+  }
+  S.live.d = m.d || {}; S.live.c = m.c || {}; S.live.s = m.s || {};
+  liveDirty = true;
+  scopeDirty = true;
+}
+
+function currentSkin() { return document.documentElement.getAttribute("data-skin") || "lab"; }
+function applySkin(name) {
+  if (!["lab", "studio", "deck"].includes(name)) name = "lab";
+  document.documentElement.setAttribute("data-skin", name);
+  store("bb-skin", name);
+  $$("[data-skin]").forEach(b => { if (b.tagName === "BUTTON") b.setAttribute("aria-pressed", String(b.dataset.skin === name)); });
+  colorCache = null;
+  scopeDirty = true;
+  liveDirty = true;
+  requestAnimationFrame(() => { measureTopbar(); scopeDirty = true; });
+}
+
+function setTab(name, push) {
+  if (!["pins", "scope", "i2c", "system"].includes(name)) name = "pins";
+  S.tab = name;
+  $$(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.tab === name)));
+  $$(".view").forEach(v => { v.hidden = v.id !== "view-" + name; });
+  if (push) { try { history.replaceState(null, "", "#" + name); } catch (e) { } }
+  if (name !== "pins") closeSheet();
+  if (name === "scope") { scopeDirty = true; renderScopeChrome(); }
+  if (name === "system") renderSystem();
+  if (name === "i2c") {
+    renderI2c();
+    if (!S.scan && !S.scanAuto && S.i2c.on && S.link && S.link.ready()) { S.scanAuto = true; cmd({ t: "i2c_scan" }); }
+  }
+}
+
+function measureTopbar() {
+  const tb = $("#topbar");
+  if (tb) document.documentElement.style.setProperty("--topbar-h", tb.offsetHeight + "px");
+}
+
+function updateCounts() {
+  const active = [...S.pins.values()].filter(p => p.m !== "off" && p.m !== "i2c").length;
+  $("#pinsCount").textContent = active;
+  $("#scopeCount").textContent = S.slots.size;
+  $("#i2cCount").textContent = S.scan && S.scan.ok ? (S.scan.found || []).length : (S.i2c.on ? "on" : "–");
+}
+
+function renderHeader() {
+  const sys = S.sys, info = S.info;
+  const net = (sys && sys.net) || (info && info.net);
+  const host = $("#hostLabel");
+  if (net) host.textContent = net.host + ".local · " + net.ip;
+  else if (S.mode === "offline") host.textContent = location.host + " · not answering";
+  const bars = $$("#rssiBars b");
+  let lvl = 0, txt = "--";
+  if (net && net.mode === "hotspot") { txt = "Hotspot"; lvl = 4; }
+  else if (net && typeof net.rssi === "number") {
+    lvl = net.rssi >= -55 ? 4 : net.rssi >= -65 ? 3 : net.rssi >= -75 ? 2 : net.rssi >= -85 ? 1 : 0;
+    txt = net.rssi + " dBm";
+  }
+  bars.forEach((b, i) => b.classList.toggle("on", i < lvl));
+  $("#rssiText").textContent = txt;
+  $("#tempText").textContent = sys && typeof sys.temp === "number" ? sys.temp.toFixed(1) + " °C" : "--";
+  $("#upText").textContent = sys ? "up " + fmtUp(sys.up) : "--";
+  const led = $("#pcbLed");
+  if (led) {
+    const mode = net ? net.mode : null;
+    const c = S.mode === "offline" ? "#444" : mode === "hotspot" ? "#b06bff" : mode === "connecting" ? "#3d7bff" : mode ? "#33d17a" : "#444";
+    led.style.background = c;
+    led.style.boxShadow = c === "#444" ? "" : "0 0 10px " + c;
+  }
+}
+
+const BB_I2C_DEFAULTS = [8, 9];
+function userPins() { return S.info ? S.info.pins.map(p => p.g) : DEFAULT_PINS; }
+function isUser(g) { return userPins().includes(g); }
+function isAdc(g) { return g >= 1 && g <= 10; }
+function ledPin() { return S.info ? S.info.statusLed : 38; }
+function reservedInfo(g) {
+  if (g === ledPin()) return LED_INFO;
+  return RESERVED[g] || ["N/A", "Not available", "This pin isn't offered on the bench."];
+}
+function capsOf(g) {
+  const c = [];
+  if (isAdc(g)) c.push("ADC1 ch" + (g - 1));
+  if (g >= 11 && g <= 20) c.push("ADC2 (unusable with WiFi)");
+  if (g >= 1 && g <= 14) c.push("Touch " + g);
+  if (g >= 39 && g <= 42) c.push({ 39: "JTAG MTCK", 40: "JTAG MTDO", 41: "JTAG MTDI", 42: "JTAG MTMS" }[g]);
+  if (g === 15 || g === 16) c.push("32 kHz crystal");
+  if (g === 17) c.push("UART1 TX");
+  if (g === 18) c.push("UART1 RX");
+  if (g === BB_I2C_DEFAULTS[0]) c.push("I2C SDA default");
+  if (g === BB_I2C_DEFAULTS[1]) c.push("I2C SCL default");
+  return c;
+}
+function trimNum(v) { return (Math.round(v * 10) / 10).toString(); }
+function shortHz(hz) { return hz >= 1000 ? (hz / 1000).toFixed(hz >= 10000 ? 0 : 1) + "k" : Math.round(hz) + "Hz"; }
+function servoAngle(p, us) { return clamp((us - p.mn) / Math.max(1, p.mx - p.mn) * 180, 0, 180); }
+function voltsOf(g) {
+  const raw = S.live.a[g], p = S.pins.get(g);
+  if (raw == null || !p || p.m !== "adc") return null;
+  return raw / 1000 * (p.sc || 1);
+}
+function chColor(slot) { return "var(" + CH_VARS[slot || 0] + ")"; }
+
+function buildBoard() {
+  const mk = (id, side) => {
+    const isG = typeof id === "number";
+    let kind = "gpio";
+    if (!isG) kind = id === "GND" ? "gnd" : id === "RST" ? "res" : "pwr";
+    else if (!isUser(id)) kind = "res";
+    const cls = "pin k-" + kind + (isG && kind === "gpio" && isAdc(id) ? " k-adc" : "");
+    const idEl = h("span", { class: "id" }, isG ? [h("small", null, "IO"), String(id)] : id);
+    const st = h("span", { class: "st" }, isG && kind === "res" ? reservedInfo(id)[0] : "");
+    const pad = h("span", { class: "pad" });
+    const label = isG ? "GPIO " + id + (kind === "res" ? ", reserved" : "") : POWER[id][0];
+    const btn = h("button", { class: cls, type: "button", "data-pin": String(id), "aria-pressed": "false", "aria-label": label, title: label },
+      side === "l" ? [st, idEl, pad] : [pad, idEl, st]);
+    btn.addEventListener("click", () => selectPin(id));
+    return btn;
+  };
+  $("#hdrL").replaceChildren(...LEFT.map(id => mk(id, "l")));
+  $("#hdrR").replaceChildren(...RIGHT.map(id => mk(id, "r")));
+  renderBoard();
+}
+
+function pinStatus(g) {
+  const p = S.pins.get(g);
+  if (!p) return { m: "off", st: "" };
+  switch (p.m) {
+    case "i2c": return { m: "i2c", st: "I2C " + (g === S.i2c.sda ? "SDA" : "SCL") };
+    case "in": {
+      const lv = S.live.d[g], c = S.live.c[g];
+      let st = "IN " + (lv == null ? "--" : lv ? "HI" : "LO");
+      if (c && c[1] >= 1) st += " " + shortHz(c[1]);
+      return { m: "in", lv, st };
+    }
+    case "out": return { m: "out", lv: p.v, st: "OUT " + (p.v ? "HI" : "LO") };
+    case "pwm": return { m: "pwm", st: "PWM " + trimNum(p.du) + "%", duty: p.du };
+    case "servo": {
+      const us = S.live.s[g] != null ? S.live.s[g] : p.us, ang = servoAngle(p, us);
+      return { m: "servo", st: "SRV " + Math.round(ang) + "°", duty: ang / 180 * 100 };
+    }
+    case "adc": {
+      const v = voltsOf(g);
+      return { m: "adc", st: v == null ? "ADC" : (Math.abs(v) < 10 ? v.toFixed(2) : v.toFixed(1)) + "V", ch: S.slots.get(g) };
+    }
+  }
+  return { m: "off", st: "" };
+}
+
+function renderBoard() {
+  const sel = S.selected == null ? null : String(S.selected);
+  $$("#board .pin").forEach(btn => {
+    const key = btn.dataset.pin;
+    btn.setAttribute("aria-pressed", String(key === sel));
+    const g = Number(key);
+    if (!Number.isInteger(g) || !isUser(g)) return;
+    const s = pinStatus(g);
+    if (btn.dataset.m !== s.m) btn.dataset.m = s.m;
+    if (s.lv != null) btn.dataset.lv = s.lv ? "1" : "0"; else delete btn.dataset.lv;
+    btn.style.setProperty("--duty", (s.duty || 0).toFixed(1) + "%");
+    if (s.ch != null) btn.style.setProperty("--chc", chColor(s.ch)); else btn.style.removeProperty("--chc");
+    const st = btn.querySelector(".st");
+    if (st.textContent !== s.st) st.textContent = s.st;
+  });
+}
+
+const mqSheet = window.matchMedia("(max-width: 980px)");
+function openSheet() {
+  if (!mqSheet.matches) return;
+  $("#inspector").classList.add("open");
+  $("#sheetBackdrop").classList.add("open");
+}
+function closeSheet() {
+  $("#inspector").classList.remove("open");
+  $("#sheetBackdrop").classList.remove("open");
+}
+function selectPin(id) {
+  S.selected = id;
+  renderBoard();
+  renderInspector(true);
+  openSheet();
+  if (!mqSheet.matches) { const side = $("#pinsSide"); if (side) side.scrollTop = 0; }
+}
+
+function inspKey(id) {
+  if (typeof id === "string") return "p:" + id;
+  const p = S.pins.get(id);
+  return id + ":" + (p ? p.m + ":" + (p.cnt ? 1 : 0) : "off") + ":" + (isUser(id) ? 1 : 0);
+}
+
+let R = {};
+function segButtons(opts, current, onPick, label) {
+  return h("div", { class: "seg full", role: "group", "aria-label": label || null },
+    opts.map(([v, text, dis, title]) => h("button", {
+      type: "button", "aria-pressed": String(v === current), "data-v": v, disabled: !!dis, title: title || null,
+      onclick: () => onPick(v)
+    }, text)));
+}
+function setPressed(seg, value) { if (seg) $$("button", seg).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === String(value)))); }
+function note(text, warn) {
+  return h("div", { class: "note" + (warn ? " warn" : "") }, icon(warn ? "warn" : "info"), h("div", null, text));
+}
+function closeBtn() {
+  return h("button", { class: "btn sm ghost insp-close", type: "button", "aria-label": "Close pin settings", onclick: closeSheet }, icon("close"));
+}
+function inspHead(title, sub) {
+  return h("div", { class: "insp-head" },
+    h("div", { style: "min-width:0" }, h("div", { class: "insp-title" }, title), sub ? h("div", { class: "insp-sub" }, sub) : null),
+    closeBtn());
+}
+function slider(min, max, step, value, onInput, onChange, aria) {
+  const el = h("input", { type: "range", min, max, step, value, "aria-label": aria || null });
+  const paint = () => el.style.setProperty("--p", ((el.value - min) / (max - min) * 100) + "%");
+  el.addEventListener("input", () => { paint(); onInput(+el.value); });
+  el.addEventListener("change", () => onChange(+el.value));
+  el._paint = paint;
+  paint();
+  return el;
+}
+function setSlider(el, v) {
+  if (!el || document.activeElement === el) return;
+  if (+el.value !== v) el.value = v;
+  el._paint && el._paint();
+}
+function setInput(el, v) { if (el && document.activeElement !== el && el.value !== String(v)) el.value = v; }
+function stat(k, ref) { const v = h("div", { class: "v" }, "--"); R[ref] = v; return h("div", { class: "stat" }, h("div", { class: "k" }, k), v); }
+
+const RECIPES = [
+  ["Test an LED", "GPIO 16 → LED → 330 Ω resistor → GND", () => { pinCmd(16, { m: "out", v: 1 }); selectPin(16); }],
+  ["Read a potentiometer", "Middle leg → GPIO 4, outer legs → 3V3 and GND", () => { pinCmd(4, { m: "adc" }); selectPin(4); }],
+  ["Check a button", "Button between GPIO 5 and GND, pull-up on", () => { pinCmd(5, { m: "in", pull: "up" }); selectPin(5); }],
+  ["Run a 4-pin PC fan", "25 kHz PWM on GPIO 7 (blue wire), tach on GPIO 6 (green)", () => { pinCmd(7, { m: "pwm", f: 25000, du: 50 }); pinCmd(6, { m: "in", pull: "up" }); selectPin(7); }],
+  ["Sweep a servo", "Signal → GPIO 15, red → 5V, brown → GND", () => { pinCmd(15, { m: "servo", us: 1500, sw: 1, sp: 2000 }); selectPin(15); }]
+];
+
+function emptyInspector() {
+  return [
+    inspHead("Pick a pin", "Tap any pin on the board to see what it can do."),
+    h("div", { class: "insp-body" },
+      h("div", { class: "label" }, "Quick starts"),
+      h("div", { class: "recipes" }, RECIPES.map(([t, d, run]) => h("button", { class: "recipe", type: "button", onclick: run }, h("b", null, t), h("span", null, d)))),
+      h("p", { class: "hint" }, "Each quick start sets the pin up for you. Wire it first, then tap. Everything stays at 3.3 V logic."))
+  ];
+}
+
+function renderInspector(force) {
+  const el = $("#inspector");
+  const id = S.selected;
+  if (id == null) {
+    if (el.dataset.key !== "none") { el.dataset.key = "none"; R = {}; el.replaceChildren(...emptyInspector()); }
+    return;
+  }
+  const key = inspKey(id);
+  if (force || el.dataset.key !== key) {
+    el.dataset.key = key;
+    R = {};
+    el.replaceChildren(...buildInspector(id));
+  }
+  softInspector();
+}
+
+function buildInspector(id) {
+  if (typeof id === "string") {
+    const [title, desc] = POWER[id];
+    return [inspHead(id, h("span", { class: "tag" }, title)), h("div", { class: "insp-body" }, note(desc))];
+  }
+  if (!isUser(id)) {
+    const r = reservedInfo(id);
+    return [inspHead("GPIO " + id, [h("span", { class: "tag warn" }, "Reserved"), h("span", { class: "tag" }, r[1])]), h("div", { class: "insp-body" }, note(r[2], true))];
+  }
+  const p = S.pins.get(id) || { g: id, m: "off" };
+  const head = inspHead("GPIO " + id, capsOf(id).map(c => h("span", { class: "tag" }, c)));
+  if (p.m === "i2c") {
+    return [head, h("div", { class: "insp-body" },
+      note("This pin is the I2C bus's " + (id === S.i2c.sda ? "SDA (data)" : "SCL (clock)") + " line right now. Release the bus on the I2C tab to use it for something else."),
+      h("div", null, h("button", { class: "btn", type: "button", onclick: () => setTab("i2c", true) }, "Open I2C")))];
+  }
+  const modeSeg = segButtons(MODES.map(([m, label]) => [m, label, m === "adc" && !isAdc(id), m === "adc" && !isAdc(id) ? "Only GPIO 1–10 can measure voltage" : null]),
+    p.m, m => { if (m !== p.m) pinCmd(id, m === "in" ? { m, pull: "up" } : { m }); }, "Pin mode");
+  modeSeg.classList.add("modes");
+  const body = h("div", { class: "insp-body" }, h("div", { class: "field" }, h("span", { class: "label" }, "Mode"), modeSeg));
+  const add = (...els) => els.forEach(e => e && body.append(e));
+  switch (p.m) {
+    case "off": add(h("p", { class: "hint" }, "Off means high-impedance: the pin isn't driving anything and has no pull resistor. It's the safe default."), isAdc(id) ? h("p", { class: "hint" }, "This pin can also measure voltage. Pick Analog to graph it on the Scope.") : null); break;
+    case "in": add(...panelInput(id, p)); break;
+    case "out": add(...panelOutput(id, p)); break;
+    case "pwm": add(...panelPwm(id, p)); break;
+    case "servo": add(...panelServo(id, p)); break;
+    case "adc": add(...panelAnalog(id, p)); break;
+  }
+  return [head, body];
+}
+
+const PULL_HINT = {
+  none: "No resistor. Fine when something drives the pin, but a disconnected pin floats and flickers between HIGH and LOW.",
+  up: "A weak (~45 kΩ) resistor to 3.3 V, so the pin reads HIGH until something pulls it to ground. Use it for buttons wired to GND and fan tach wires.",
+  down: "A weak resistor to ground, so the pin reads LOW until something drives it HIGH."
+};
+
+function panelInput(g, p) {
+  R.lamp = h("div", { class: "lamp", "data-on": "0" }, h("i"), R.lampText = h("b", null, "--"));
+  R.pullHint = h("p", { class: "hint" }, PULL_HINT[p.pull || "none"]);
+  R.pullSeg = segButtons([["none", "None"], ["up", "Pull-up"], ["down", "Pull-down"]], p.pull || "none", v => pinCmd(g, { pull: v }), "Pull resistor");
+  const out = [R.lamp, h("div", { class: "field" }, h("span", { class: "label" }, "Pull resistor"), R.pullSeg, R.pullHint)];
+  if (p.cnt) {
+    const ppr = S.ppr.get(g) || 2;
+    const sel = h("select", { class: "select", style: "width:auto;padding:5px 8px", "aria-label": "Pulses per revolution" }, PPR.map(n => h("option", { value: n, selected: n === ppr }, n + " per rev")));
+    sel.addEventListener("change", () => { S.ppr.set(g, +sel.value); softInspector(); });
+    out.push(h("div", { class: "field" },
+      h("div", { class: "sub-h" }, h("span", { class: "label" }, "Pulse counter"), h("button", { class: "btn sm ghost", type: "button", onclick: () => pinCmd(g, { reset: 1 }) }, "Reset")),
+      h("div", { class: "stat-row" }, stat("Edges", "cEdges"), stat("Frequency", "cHz"), stat("RPM", "cRpm")),
+      h("div", { class: "row", style: "justify-content:space-between" }, h("span", { class: "hint" }, "Counts rising edges in hardware, up to several MHz."), sel)));
+  } else {
+    out.push(note("All 4 hardware pulse counters are busy, so this pin shows its level only. Turn off another input to free one."));
+  }
+  return out;
+}
+
+function panelOutput(g, p) {
+  R.outLo = h("button", { type: "button", class: "lo", "aria-pressed": String(!p.v), onclick: () => pinCmd(g, { v: 0 }) }, "LOW");
+  R.outHi = h("button", { type: "button", class: "hi", "aria-pressed": String(!!p.v), onclick: () => pinCmd(g, { v: 1 }) }, "HIGH");
+  return [h("div", { class: "bigtoggle", role: "group", "aria-label": "Output level" }, R.outLo, R.outHi),
+    h("p", { class: "hint" }, "HIGH puts 3.3 V on the pin, LOW ties it to ground. A pin can supply about 20 mA: enough for an LED with a 220–330 Ω resistor. Use a transistor or MOSFET for motors, relays and LED strips.")];
+}
+
+const FREQ_PRESETS = [[50, "50 Hz", "Slow enough to see flicker"], [1000, "1 kHz", "General purpose"], [2000, "2 kHz", "Passive buzzers"], [5000, "5 kHz", "Flicker-free LED dimming"], [25000, "25 kHz", "4-pin PC fans (Intel spec)"]];
+function wavePath(duty) {
+  const W = 300, hi = 6, lo = 40, cyc = 3, cw = W / cyc;
+  if (duty <= 0) return "M0 " + lo + " L" + W + " " + lo;
+  if (duty >= 100) return "M0 " + hi + " L" + W + " " + hi;
+  let d = "M0 " + lo;
+  for (let i = 0; i < cyc; i++) { const x0 = i * cw, x1 = x0 + cw * duty / 100; d += " L" + x0 + " " + lo + " L" + x0 + " " + hi + " L" + x1 + " " + hi + " L" + x1 + " " + lo; }
+  return d + " L" + W + " " + lo;
+}
+function panelPwm(g, p) {
+  R.dutyBig = h("span", { class: "big" }, trimNum(p.du));
+  R.duty = slider(0, 100, 0.5, p.du, v => { R.dutyBig.textContent = trimNum(v); R.wave.setAttribute("d", wavePath(v)); pinCmdThrottled(g, { du: v }); }, v => pinCmd(g, { du: v }), "Duty cycle");
+  R.dutyNum = h("input", { class: "input num", type: "number", min: 0, max: 100, step: 0.5, value: p.du, style: "width:96px", "aria-label": "Duty cycle percent" });
+  R.dutyNum.addEventListener("change", () => { const v = clamp(+R.dutyNum.value || 0, 0, 100); pinCmd(g, { du: v }); });
+  const svg = document.createElementNS(SVGNS, "svg");
+  svg.setAttribute("viewBox", "0 0 300 46"); svg.setAttribute("class", "wave"); svg.setAttribute("preserveAspectRatio", "none"); svg.setAttribute("aria-hidden", "true");
+  R.wave = document.createElementNS(SVGNS, "path");
+  R.wave.setAttribute("fill", "none"); R.wave.setAttribute("stroke", "var(--accent)"); R.wave.setAttribute("stroke-width", "2.2"); R.wave.setAttribute("vector-effect", "non-scaling-stroke"); R.wave.setAttribute("stroke-linejoin", "round");
+  R.wave.setAttribute("d", wavePath(p.du));
+  svg.append(R.wave);
+  R.freq = h("input", { class: "input num", type: "number", min: 5, max: 100000, step: 1, value: p.f, "aria-label": "Frequency in hertz" });
+  R.freq.addEventListener("change", () => { const v = Math.round(+R.freq.value); if (v >= 5 && v <= 100000) pinCmd(g, { f: v }); else toast("Frequency must be between 5 Hz and 100 kHz.", "err"); });
+  R.freqChips = h("div", { class: "chips" }, FREQ_PRESETS.map(([f, label, why]) => h("button", { class: "chip", type: "button", "data-f": f, title: why, "aria-pressed": String(p.f === f), onclick: () => pinCmd(g, { f }) }, label)));
+  R.fa = h("div", { class: "readout-sub" });
+  return [
+    h("div", { class: "field" }, h("span", { class: "label" }, "Duty cycle"),
+      h("div", { class: "readout" }, R.dutyBig, h("span", { class: "unit" }, "%")), R.duty,
+      h("div", { class: "row" }, R.dutyNum, h("div", { class: "chips" }, [0, 25, 50, 75, 100].map(v => h("button", { class: "chip", type: "button", onclick: () => pinCmd(g, { du: v }) }, v + "%"))))),
+    svg,
+    h("div", { class: "field" }, h("span", { class: "label" }, "Frequency"), h("div", { class: "input-unit" }, R.freq, h("span", null, "Hz")), R.freqChips, R.fa),
+    h("p", { class: "hint" }, "PWM flips the pin on and off very fast. Duty is the share of each cycle it's on, so 40% acts like 40% power. 4-pin PC fans take 25 kHz on the blue wire.")
+  ];
+}
+
+function panelServo(g, p) {
+  R.svBig = h("span", { class: "big" }, String(p.us));
+  R.svAng = h("span", { class: "readout-sub" }, "");
+  R.sv = slider(p.mn, p.mx, 5, p.us, v => { R.svBig.textContent = v; pinCmdThrottled(g, { us: v }); }, v => pinCmd(g, { us: v }), "Pulse width");
+  R.sweep = h("input", { type: "checkbox", checked: !!p.sw });
+  R.sweep.addEventListener("change", () => pinCmd(g, { sw: R.sweep.checked ? 1 : 0 }));
+  R.spText = h("span", { class: "num muted", style: "font-size:13px" }, (p.sp / 1000).toFixed(1) + " s");
+  R.sp = slider(300, 10000, 100, p.sp, v => { R.spText.textContent = (v / 1000).toFixed(1) + " s"; }, v => pinCmd(g, { sp: v }), "Sweep period");
+  R.mn = h("input", { class: "input num", type: "number", min: 400, max: 2500, step: 10, value: p.mn, "aria-label": "Minimum pulse" });
+  R.mx = h("input", { class: "input num", type: "number", min: 500, max: 2600, step: 10, value: p.mx, "aria-label": "Maximum pulse" });
+  R.mn.addEventListener("change", () => pinCmd(g, { mn: +R.mn.value }));
+  R.mx.addEventListener("change", () => pinCmd(g, { mx: +R.mx.value }));
+  const mid = Math.round((p.mn + p.mx) / 2 / 5) * 5;
+  return [
+    h("div", { class: "field" }, h("span", { class: "label" }, "Pulse width"),
+      h("div", { class: "readout" }, R.svBig, h("span", { class: "unit" }, "µs"), R.svAng), R.sv,
+      h("div", { class: "row" },
+        h("button", { class: "btn sm", type: "button", onclick: () => pinCmd(g, { us: p.mn, sw: 0 }) }, "Min"),
+        h("button", { class: "btn sm", type: "button", onclick: () => pinCmd(g, { us: mid, sw: 0 }) }, "Center"),
+        h("button", { class: "btn sm", type: "button", onclick: () => pinCmd(g, { us: p.mx, sw: 0 }) }, "Max"))),
+    h("div", { class: "field" },
+      h("div", { class: "sub-h" }, h("label", { class: "switch" }, R.sweep, h("span", { class: "track" }), h("span", null, "Sweep back and forth")), R.spText),
+      R.sp),
+    h("div", { class: "grid2" },
+      h("label", { class: "field" }, h("span", { class: "label" }, "Min pulse (µs)"), R.mn),
+      h("label", { class: "field" }, h("span", { class: "label" }, "Max pulse (µs)"), R.mx)),
+    h("p", { class: "hint" }, "Hobby servos want one pulse every 20 ms. 1000–2000 µs is safe for any servo, and many go 500–2500. Power the servo from 5V, not 3V3, and share ground with the board.")
+  ];
+}
+
+function panelAnalog(g, p) {
+  const slot = S.slots.get(g);
+  R.aBig = h("span", { class: "big" }, "--");
+  R.aSub = h("div", { class: "readout-sub" });
+  R.spark = h("canvas", { class: "spark", "aria-hidden": "true" });
+  R.divChips = h("div", { class: "chips" }, DIVIDERS.map(([name, sc, why]) => h("button", { class: "chip", type: "button", "data-sc": sc, title: why, onclick: () => pinCmd(g, { sc }) }, name + " ×" + trimNum(sc))));
+  const r1 = h("input", { class: "input num", type: "number", min: 0, step: "any", placeholder: "R1 kΩ (top)", style: "flex:1;width:auto;min-width:90px", "aria-label": "Top resistor R1 in kilohms" });
+  const r2 = h("input", { class: "input num", type: "number", min: 0, step: "any", placeholder: "R2 kΩ (to GND)", style: "flex:1;width:auto;min-width:90px", "aria-label": "Bottom resistor R2 in kilohms" });
+  const apply = h("button", { class: "btn sm", type: "button", onclick: () => {
+    const a = +r1.value, b = +r2.value;
+    if (!(a >= 0) || !(b > 0)) { toast("Enter both resistor values in kΩ. R2 is the one going to ground.", "err"); return; }
+    const sc = (a + b) / b;
+    if (sc > 1000) { toast("That divider ratio is too big (max ×1000).", "err"); return; }
+    pinCmd(g, { sc: Math.round(sc * 10000) / 10000 });
+  } }, "Use");
+  R.range = h("p", { class: "hint" });
+  return [
+    h("div", { class: "field" },
+      h("div", { class: "sub-h" }, h("span", { class: "label" }, "Voltage"), h("span", { class: "tag", style: "color:" + chColor(slot) }, "CH" + ((slot || 0) + 1))),
+      h("div", { class: "readout" }, R.aBig, h("span", { class: "unit" }, "V")), R.aSub, R.spark),
+    h("div", { class: "field" }, h("span", { class: "label" }, "Voltage divider"), R.divChips,
+      h("span", { class: "hint" }, "Custom: enter your two resistors"),
+      h("div", { class: "row", style: "flex-wrap:nowrap" }, r1, r2, apply),
+      R.range),
+    h("div", { class: "row" }, h("button", { class: "btn", type: "button", onclick: () => setTab("scope", true) }, "Open in Scope")),
+    note("Never put more than 3.3 V on a GPIO pin. For bigger voltages use a divider: signal → R1 → pin → R2 → GND.", true)
+  ];
+}
+
+function drawSpark(cv, g, colorVar) {
+  const r = S.series.get(g), p = S.pins.get(g);
+  const dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
+  if (!W || !H) return;
+  if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  const ctx = cv.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  const col = colors();
+  ctx.fillStyle = col.inset; ctx.fillRect(0, 0, W, H);
+  if (!r || !r.n || !p) return;
+  const sc = (p.sc || 1) / 1000, tEnd = S.lastUp, tStart = tEnd - 10000;
+  let i0 = r.firstAt(tStart), min = Infinity, max = -Infinity;
+  for (let i = i0; i < r.n; i++) { const v = r.v[r.idx(i)] * sc; if (v < min) min = v; if (v > max) max = v; }
+  if (!isFinite(min)) return;
+  const span = Math.max(max - min, 0.05), lo = min - span * 0.15, hi = max + span * 0.15;
+  const c = col[colorVar] || col.accent;
+  ctx.beginPath();
+  for (let i = i0; i < r.n; i++) {
+    const k = r.idx(i), x = (r.t[k] - tStart) / 10000 * W, y = H - (r.v[k] * sc - lo) / (hi - lo) * H;
+    if (i === i0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = c; ctx.lineWidth = 1.6; ctx.lineJoin = "round"; ctx.stroke();
+  ctx.lineTo(W, H); ctx.lineTo((r.t[r.idx(i0)] - tStart) / 10000 * W, H); ctx.closePath();
+  ctx.globalAlpha = 0.12; ctx.fillStyle = c; ctx.fill(); ctx.globalAlpha = 1;
+  const k = r.idx(r.n - 1), x = (r.t[k] - tStart) / 10000 * W, y = H - (r.v[k] * sc - lo) / (hi - lo) * H;
+  ctx.beginPath(); ctx.arc(Math.min(x, W - 3), y, 3, 0, Math.PI * 2); ctx.fillStyle = c; ctx.fill();
+}
+
+function softInspector() {
+  const g = S.selected;
+  if (typeof g !== "number" || !isUser(g)) return;
+  const p = S.pins.get(g);
+  if (!p) return;
+  if (p.m === "in") {
+    const lv = S.live.d[g];
+    if (R.lamp) { R.lamp.dataset.on = lv ? "1" : "0"; R.lampText.textContent = lv == null ? "--" : lv ? "HIGH" : "LOW"; }
+    setPressed(R.pullSeg, p.pull || "none");
+    if (R.pullHint) R.pullHint.textContent = PULL_HINT[p.pull || "none"];
+    const c = S.live.c[g];
+    if (c && R.cEdges) {
+      const ppr = S.ppr.get(g) || 2;
+      R.cEdges.textContent = fmtInt(c[0]);
+      R.cHz.textContent = fmtHz(c[1]);
+      R.cRpm.textContent = fmtInt(c[1] * 60 / ppr);
+    }
+  } else if (p.m === "out") {
+    if (R.outLo) { R.outLo.setAttribute("aria-pressed", String(!p.v)); R.outHi.setAttribute("aria-pressed", String(!!p.v)); }
+  } else if (p.m === "pwm") {
+    if (!R.duty) return;
+    if (document.activeElement !== R.duty) { setSlider(R.duty, p.du); R.dutyBig.textContent = trimNum(p.du); R.wave.setAttribute("d", wavePath(p.du)); }
+    setInput(R.dutyNum, p.du);
+    setInput(R.freq, p.f);
+    $$("button", R.freqChips).forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.f === p.f)));
+    R.fa.textContent = "Actual " + fmtInt(p.fa || p.f) + " Hz · " + p.r + "-bit (" + fmtInt(Math.pow(2, p.r)) + " steps)";
+  } else if (p.m === "servo") {
+    if (!R.sv) return;
+    const us = S.live.s[g] != null ? S.live.s[g] : p.us;
+    if (R.sv.min != p.mn || R.sv.max != p.mx) { R.sv.min = p.mn; R.sv.max = p.mx; }
+    R.sv.disabled = !!p.sw;
+    if (p.sw) { R.sv.value = us; R.sv._paint(); R.svBig.textContent = us; }
+    else if (document.activeElement !== R.sv) { setSlider(R.sv, p.us); R.svBig.textContent = p.us; }
+    R.svAng.textContent = "≈ " + Math.round(servoAngle(p, p.sw ? us : p.us)) + "°";
+    if (R.sweep.checked !== !!p.sw) R.sweep.checked = !!p.sw;
+    if (document.activeElement !== R.sp) { setSlider(R.sp, p.sp); R.spText.textContent = (p.sp / 1000).toFixed(1) + " s"; }
+    setInput(R.mn, p.mn); setInput(R.mx, p.mx);
+  } else if (p.m === "adc") {
+    if (!R.aBig) return;
+    const raw = S.live.a[g], v = voltsOf(g), slot = S.slots.get(g) || 0;
+    R.aBig.textContent = fmtV(v);
+    R.aSub.textContent = "Pin " + (raw == null ? "--" : fmtInt(raw)) + " mV · ×" + trimNum(p.sc) + (p.sc === 1 ? " (direct)" : " divider");
+    $$("button", R.divChips).forEach(b => b.setAttribute("aria-pressed", String(Math.abs(+b.dataset.sc - p.sc) < 0.001)));
+    R.range.textContent = "The pin reads up to about 3.1 V" + (p.sc > 1.0001 ? ", so this setup tops out near " + fmtV(3.1 * p.sc) + " V at the input." : ".");
+    drawSpark(R.spark, g, CH_VARS[slot]);
+  }
+}
+
+function modeColor(p) {
+  if (p.m === "in") return "var(--ok)";
+  if (p.m === "servo") return "var(--servo)";
+  if (p.m === "adc") return chColor(S.slots.get(p.g));
+  if (p.m === "i2c") return "var(--i2c)";
+  return "var(--accent)";
+}
+function valueText(p) {
+  const g = p.g;
+  switch (p.m) {
+    case "in": { const lv = S.live.d[g], c = S.live.c[g]; return (lv == null ? "--" : lv ? "HIGH" : "LOW") + (c && c[1] > 0 ? " · " + fmtHz(c[1]) : ""); }
+    case "out": return p.v ? "HIGH" : "LOW";
+    case "pwm": return trimNum(p.du) + "% · " + fmtHz(p.fa || p.f);
+    case "servo": return (S.live.s[g] != null ? S.live.s[g] : p.us) + " µs";
+    case "adc": return fmtV(voltsOf(g)) + " V";
+    case "i2c": return g === S.i2c.sda ? "SDA" : "SCL";
+  }
+  return "";
+}
+let activeCells = new Map();
+function renderActive() {
+  const body = $("#activeBody");
+  const rows = [...S.pins.values()].sort((a, b) => a.g - b.g);
+  activeCells = new Map();
+  if (!rows.length) {
+    body.replaceChildren(h("div", { class: "empty" }, h("b", null, "Nothing running"), "Every pin is off. Pick one on the board or try a quick start."));
+    return;
+  }
+  const tb = h("tbody");
+  for (const p of rows) {
+    const v = h("td", { class: "v" }, valueText(p));
+    activeCells.set(p.g, v);
+    const offBtn = p.m === "i2c" ? h("span", { class: "faint", style: "font-size:12px" }, "I2C tab") :
+      h("button", { class: "btn sm ghost", type: "button", "aria-label": "Turn GPIO " + p.g + " off", onclick: (e) => { e.stopPropagation(); pinCmd(p.g, { m: "off" }); } }, "Off");
+    const tr = h("tr", { tabindex: "0" },
+      h("td", null, h("span", { class: "dot", style: "background:" + modeColor(p) }), h("span", { class: "num" }, "GPIO " + p.g)),
+      h("td", { class: "muted" }, p.m === "i2c" ? "I2C bus" : MODE_LABEL[p.m]), v, h("td", { style: "text-align:right;width:1%" }, offBtn));
+    tr.addEventListener("click", () => p.m === "i2c" ? setTab("i2c", true) : selectPin(p.g));
+    tr.addEventListener("keydown", (e) => { if (e.key === "Enter") tr.click(); });
+    tb.append(tr);
+  }
+  body.replaceChildren(h("div", { class: "tbl-wrap" }, h("table", { class: "active-list" },
+    h("thead", null, h("tr", null, h("th", null, "Pin"), h("th", null, "Mode"), h("th", { style: "text-align:right" }, "Now"), h("th", null, h("span", { class: "sr" }, "Actions")))), tb)));
+}
+function renderActiveLive() {
+  activeCells.forEach((td, g) => { const p = S.pins.get(g); if (p) { const t = valueText(p); if (td.textContent !== t) td.textContent = t; } });
+}
+
+let liveDirty = true, scopeDirty = true, colorCache = null;
+function colors() {
+  if (colorCache) return colorCache;
+  const cs = getComputedStyle(document.documentElement);
+  const g = n => cs.getPropertyValue(n).trim();
+  colorCache = {
+    "--ch1": g("--ch1"), "--ch2": g("--ch2"), "--ch3": g("--ch3"), "--ch4": g("--ch4"),
+    accent: g("--accent"), ok: g("--ok"), warn: g("--warn"), fg: g("--fg"), fg2: g("--fg2"), fg3: g("--fg3"),
+    bg: g("--scope-bg"), inset: g("--bg-inset"), grid: g("--grid"), major: g("--grid-major"), line: g("--line"),
+    font: g("--font-num") || "monospace", glow: parseFloat(g("--trace-glow")) || 0
+  };
+  return colorCache;
+}
+
+function textOn(color) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(color).trim());
+  if (!m) return "#0b0d10";
+  const n = parseInt(m[1], 16), ch = [n >> 16, (n >> 8) & 255, n & 255].map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+  return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2] > 0.3 ? "#0b0d10" : "#ffffff";
+}
+function analogChannels() {
+  return [...S.slots.entries()].filter(([g]) => { const p = S.pins.get(g); return p && p.m === "adc"; })
+    .sort((a, b) => a[1] - b[1]).map(([g, slot]) => ({ g, slot, p: S.pins.get(g), r: S.series.get(g) }));
+}
+function digitalLanes() {
+  return [...S.pins.values()].filter(p => p.m === "in" || p.m === "out").sort((a, b) => a.g - b.g);
+}
+function niceStep(range, target) {
+  const raw = range / target, mag = Math.pow(10, Math.floor(Math.log10(raw))), n = raw / mag;
+  return (n < 1.5 ? 1 : n < 3 ? 2 : n < 7 ? 5 : 10) * mag;
+}
+function scopeWindow() {
+  const tEnd = S.scope.running ? S.lastUp : S.scope.pausedAt;
+  return [tEnd - S.scope.win * 1000, tEnd];
+}
+function channelStats(ch, t0, t1) {
+  const r = ch.r;
+  if (!r || !r.n) return null;
+  const sc = (ch.p.sc || 1) / 1000;
+  let min = Infinity, max = -Infinity, sum = 0, n = 0, last = null;
+  for (let i = r.firstAt(t0); i < r.n; i++) {
+    const k = r.idx(i);
+    if (r.t[k] > t1) break;
+    const v = r.v[k] * sc;
+    if (v < min) min = v; if (v > max) max = v; sum += v; n++; last = v;
+  }
+  return n ? { min, max, avg: sum / n, pp: max - min, now: last, n } : null;
+}
+
+function renderScopeChrome() {
+  const chans = analogChannels();
+  $("#legend").replaceChildren(...chans.map(c => {
+    const b = h("b", { "data-g": c.g }, "--");
+    return h("button", { class: "ch", type: "button", title: "Open GPIO " + c.g, onclick: () => { setTab("pins", true); selectPin(c.g); } },
+      h("i", { style: "background:" + chColor(c.slot) }), "CH" + (c.slot + 1) + " · GPIO " + c.g, b);
+  }));
+  $("#scopeEmpty").hidden = chans.length > 0 || digitalLanes().length > 0;
+  $("#scope").style.visibility = $("#scopeEmpty").hidden ? "visible" : "hidden";
+  $$("#winSeg button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.w === S.scope.win)));
+  $$("#scaleSeg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.s === S.scope.scale)));
+  const run = $("#runBtn");
+  run.replaceChildren(icon(S.scope.running ? "pause" : "play"), h("span", null, S.scope.running ? "Pause" : "Run"));
+  const stats = $("#scopeStats");
+  if (!chans.length) { stats.replaceChildren(); return; }
+  stats.replaceChildren(
+    h("thead", null, h("tr", null, ["Channel", "Now", "Min", "Max", "Average", "Peak-peak"].map(t => h("th", null, t)))),
+    h("tbody", null, chans.map(c => h("tr", { "data-g": c.g },
+      h("td", null, h("span", { class: "dot", style: "display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:8px;background:" + chColor(c.slot) }), "CH" + (c.slot + 1) + " · GPIO " + c.g + (c.p.sc !== 1 ? " ×" + trimNum(c.p.sc) : "")),
+      ["now", "min", "max", "avg", "pp"].map(k => h("td", { "data-k": k }, "--"))))));
+}
+function renderScopeLive() {
+  const [t0, t1] = scopeWindow();
+  for (const c of analogChannels()) {
+    const st = channelStats(c, t0, t1);
+    const b = $('#legend b[data-g="' + c.g + '"]');
+    const v = S.scope.running ? voltsOf(c.g) : (st ? st.now : null);
+    if (b) b.textContent = fmtV(v) + " V";
+    const row = $('#scopeStats tr[data-g="' + c.g + '"]');
+    if (row) for (const td of $$("td[data-k]", row)) td.textContent = st ? fmtV(td.dataset.k === "now" ? v : st[td.dataset.k]) : "--";
+  }
+}
+
+function drawScope() {
+  const cv = $("#scope");
+  const W = cv.clientWidth, H = cv.clientHeight;
+  if (!W || !H) return;
+  const dpr = window.devicePixelRatio || 1;
+  if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  const ctx = cv.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const col = colors();
+  ctx.clearRect(0, 0, W, H);
+  const chans = analogChannels(), lanes = digitalLanes();
+  const laneH = 24, digH = lanes.length ? lanes.length * laneH + 12 : 0;
+  const L = 50, Rm = 66, T = 10, B = 24 + digH;
+  const pw = Math.max(10, W - L - Rm), ph = Math.max(10, H - T - B);
+  const [t0, t1] = scopeWindow(), span = t1 - t0;
+  const xOf = t => L + (t - t0) / span * pw;
+
+  let lo, hi;
+  if (S.scope.scale === "full") {
+    lo = 0; hi = Math.max(3.3, ...chans.map(c => 3.3 * (c.p.sc || 1)));
+  } else {
+    let mn = Infinity, mx = -Infinity;
+    for (const c of chans) { const s = channelStats(c, t0, t1); if (s) { mn = Math.min(mn, s.min); mx = Math.max(mx, s.max); } }
+    if (!isFinite(mn)) { lo = 0; hi = 3.3; }
+    else {
+      const pad = Math.max((mx - mn) * 0.12, 0.05);
+      lo = Math.max(mn >= 0 ? 0 : -Infinity, mn - pad); hi = mx + pad;
+    }
+  }
+  const step = niceStep(hi - lo || 1, 6);
+  lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step;
+  if (hi - lo < step) hi = lo + step;
+  const yOf = v => T + ph - (v - lo) / (hi - lo) * ph;
+
+  ctx.fillStyle = col.bg;
+  ctx.fillRect(L, T, pw, ph);
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = col.grid;
+  ctx.beginPath();
+  for (let i = 1; i < 10; i++) { const x = Math.round(L + pw * i / 10) + 0.5; ctx.moveTo(x, T); ctx.lineTo(x, T + ph); }
+  for (let v = lo + step; v < hi - step / 2; v += step) { const y = Math.round(yOf(v)) + 0.5; ctx.moveTo(L, y); ctx.lineTo(L + pw, y); }
+  ctx.stroke();
+  ctx.strokeStyle = col.major;
+  ctx.strokeRect(L + 0.5, T + 0.5, pw - 1, ph - 1);
+  ctx.beginPath();
+  for (let i = 1; i < 50; i++) { if (i % 5 === 0) continue; const x = Math.round(L + pw * i / 50) + 0.5, y = Math.round(T + ph / 2) + 0.5; ctx.moveTo(x, y - 2); ctx.lineTo(x, y + 2); }
+  ctx.stroke();
+
+  ctx.font = "11px " + col.font;
+  ctx.fillStyle = col.fg2;
+  ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  const dec = step < 0.01 ? 3 : step < 0.1 ? 2 : step < 1 ? 1 : 0;
+  for (let v = lo; v <= hi + step / 2; v += step) ctx.fillText(v.toFixed(dec), L - 7, yOf(v));
+  ctx.save(); ctx.translate(12, T + ph / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = "center"; ctx.fillStyle = col.fg3; ctx.fillText("volts", 0, 0); ctx.restore();
+  ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillStyle = col.fg2;
+  for (let i = 0; i <= 10; i += 2) {
+    const sec = -S.scope.win + S.scope.win * i / 10;
+    ctx.fillText(i === 10 ? "0 s" : sec.toFixed(S.scope.win <= 5 ? 1 : 0) + " s", L + pw * i / 10, T + ph + 6);
+  }
+
+  ctx.save();
+  ctx.beginPath(); ctx.rect(L, T, pw, ph); ctx.clip();
+  ctx.lineJoin = "round"; ctx.lineCap = "round";
+  const tags = [];
+  for (const c of chans) {
+    const r = c.r, color = col[CH_VARS[c.slot]];
+    if (!r || !r.n) continue;
+    const sc = (c.p.sc || 1) / 1000;
+    let i = Math.max(0, r.firstAt(t0) - 1);
+    ctx.beginPath();
+    let started = false, colX = -1, cMin = 0, cMax = 0, lastX = 0, lastY = 0;
+    const dense = (r.n - i) > pw * 1.5;
+    for (; i < r.n; i++) {
+      const k = r.idx(i), t = r.t[k];
+      if (t > t1 + 50) break;
+      const x = xOf(t), y = yOf(r.v[k] * sc);
+      if (!dense) { if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y); lastX = x; lastY = y; continue; }
+      const px = Math.floor(x);
+      if (px !== colX) {
+        if (colX >= 0) { ctx.lineTo(colX, cMin); ctx.lineTo(colX, cMax); }
+        else { ctx.moveTo(x, y); started = true; }
+        colX = px; cMin = y; cMax = y;
+      } else { if (y < cMin) cMin = y; if (y > cMax) cMax = y; }
+      lastX = x; lastY = y;
+    }
+    if (dense && colX >= 0) { ctx.lineTo(colX, cMin); ctx.lineTo(colX, cMax); ctx.lineTo(lastX, lastY); }
+    ctx.strokeStyle = color; ctx.lineWidth = 1.7;
+    if (col.glow) { ctx.shadowColor = color; ctx.shadowBlur = col.glow; }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    if (started) tags.push({ y: lastY, color, text: fmtV(r.lastV() * sc), slot: c.slot });
+  }
+  ctx.restore();
+
+  tags.sort((a, b) => a.y - b.y);
+  for (let i = 1; i < tags.length; i++) if (tags[i].y - tags[i - 1].y < 18) tags[i].y = tags[i - 1].y + 18;
+  ctx.font = "11px " + col.font; ctx.textBaseline = "middle"; ctx.textAlign = "left";
+  for (const t of tags) {
+    const y = clamp(t.y, T + 9, T + ph - 9), x = L + pw + 6, w = Rm - 10;
+    ctx.fillStyle = t.color;
+    ctx.beginPath(); ctx.moveTo(x - 5, y); ctx.lineTo(x, y - 8); ctx.lineTo(x + w, y - 8); ctx.lineTo(x + w, y + 8); ctx.lineTo(x, y + 8); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = textOn(t.color); ctx.fillText(t.text, x + 4, y + 0.5);
+  }
+
+  if (lanes.length) {
+    const top = T + ph + 26;
+    ctx.font = "11px " + col.font;
+    lanes.forEach((p, i) => {
+      const y0 = top + i * laneH, yHi = y0 + 4, yLo = y0 + laneH - 6;
+      ctx.fillStyle = col.fg2; ctx.textAlign = "right"; ctx.textBaseline = "middle";
+      ctx.fillText("IO" + p.g, L - 7, (yHi + yLo) / 2);
+      ctx.strokeStyle = col.grid; ctx.beginPath(); ctx.moveTo(L, yLo + 0.5); ctx.lineTo(L + pw, yLo + 0.5); ctx.stroke();
+      const list = S.digital.get(p.g);
+      if (!list || !list.length) return;
+      const color = p.m === "in" ? col.ok : col.accent;
+      ctx.strokeStyle = color; ctx.lineWidth = 1.6; ctx.beginPath();
+      let j = 0; while (j < list.length - 1 && list[j + 1][0] <= t0) j++;
+      let x = L, y = list[j][1] ? yHi : yLo;
+      ctx.moveTo(x, y);
+      for (j = j + 1; j < list.length; j++) {
+        const [t, v] = list[j];
+        if (t > t1) break;
+        const nx = xOf(t), ny = v ? yHi : yLo;
+        ctx.lineTo(nx, y); ctx.lineTo(nx, ny); x = nx; y = ny;
+      }
+      ctx.lineTo(L + pw, y); ctx.stroke();
+      ctx.textAlign = "left"; ctx.fillStyle = color;
+      ctx.fillText(p.m === "in" ? "in" : "out", L + pw + 6, (yHi + yLo) / 2);
+    });
+  }
+
+  const hx = S.scope.hoverX;
+  const tip = $("#scopeTip");
+  if (hx != null && hx >= L && hx <= L + pw && chans.length) {
+    ctx.strokeStyle = col.fg3; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(Math.round(hx) + 0.5, T); ctx.lineTo(Math.round(hx) + 0.5, T + ph); ctx.stroke(); ctx.setLineDash([]);
+    const t = t0 + (hx - L) / pw * span;
+    const rows = [h("div", { class: "faint" }, ((t - t1) / 1000).toFixed(3) + " s")];
+    for (const c of chans) {
+      if (!c.r || !c.r.n) continue;
+      let i = c.r.firstAt(t); if (i >= c.r.n) i = c.r.n - 1;
+      if (i > 0 && Math.abs(c.r.t[c.r.idx(i - 1)] - t) < Math.abs(c.r.t[c.r.idx(i)] - t)) i--;
+      const k = c.r.idx(i), v = c.r.v[k] * (c.p.sc || 1) / 1000;
+      ctx.beginPath(); ctx.arc(xOf(c.r.t[k]), yOf(v), 3.5, 0, Math.PI * 2); ctx.fillStyle = col[CH_VARS[c.slot]]; ctx.fill();
+      rows.push(h("div", null, h("i", { style: "background:" + chColor(c.slot) }), "CH" + (c.slot + 1), h("b", { style: "margin-left:auto;padding-left:12px" }, fmtV(v) + " V")));
+    }
+    tip.replaceChildren(...rows);
+    tip.hidden = false;
+    const wrapW = $("#scopeWrap").clientWidth;
+    tip.style.left = (hx + 16 + 150 > wrapW ? hx - 150 : hx + 16) + "px";
+    tip.style.top = (T + 8) + "px";
+  } else tip.hidden = true;
+}
+
+function exportCsv() {
+  const chans = analogChannels().filter(c => c.r && c.r.n);
+  if (!chans.length) { toast("Nothing to export yet.", "err"); return; }
+  const [t0, t1] = scopeWindow();
+  const lines = ["time_s,channel,gpio,pin_mv,volts"];
+  for (const c of chans) {
+    const sc = c.p.sc || 1;
+    for (let i = c.r.firstAt(t0); i < c.r.n; i++) {
+      const k = c.r.idx(i), t = c.r.t[k];
+      if (t > t1) break;
+      lines.push(((t - t1) / 1000).toFixed(3) + ",CH" + (c.slot + 1) + "," + c.g + "," + Math.round(c.r.v[k]) + "," + (c.r.v[k] / 1000 * sc).toFixed(4));
+    }
+  }
+  const blob = new Blob([lines.join("\n") + "\n"], { type: "text/csv" });
+  const a = h("a", { href: URL.createObjectURL(blob), download: "benchbuddy-scope-" + new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-") + ".csv" });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  if (S.mode === "demo") toast("If nothing downloaded, this preview blocks downloads. It works when served from the board.", "info");
+}
+
+function fillRates() {
+  const rates = (S.info && S.info.rates) || [10, 20, 50, 100, 200];
+  const sel = $("#rateSel");
+  sel.replaceChildren(...rates.map(r => h("option", { value: r }, r + "/s")));
+  sel.value = String(S.rate);
+}
+
+function pinOptions(sel, current) {
+  sel.replaceChildren(...userPins().map(g => h("option", { value: g }, "GPIO " + g + (g === 8 ? " (default SDA)" : g === 9 ? " (default SCL)" : ""))));
+  sel.value = String(current);
+}
+function fillI2cSelects() {
+  pinOptions($("#sdaSel"), S.i2cLocal.sda);
+  pinOptions($("#sclSel"), S.i2cLocal.scl);
+}
+function parseHex(str, max) {
+  const s = String(str).trim().replace(/^0x/i, "");
+  if (!/^[0-9a-f]{1,2}$/i.test(s)) return null;
+  const n = parseInt(s, 16);
+  return n <= max ? n : null;
+}
+function i2cConfigIfNeeded() {
+  const L = S.i2cLocal, b = S.i2c;
+  if (!b.on || b.sda !== L.sda || b.scl !== L.scl || b.hz !== L.hz) cmd({ t: "i2c_cfg", sda: L.sda, scl: L.scl, hz: L.hz });
+}
+function onScan(m) {
+  S.scan = m;
+  if (!m.ok && m.err) toast(m.err, "err");
+  renderI2c();
+  updateCounts();
+}
+function onRw(m) {
+  const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  S.i2cLog.unshift({ time, m });
+  if (S.i2cLog.length > 60) S.i2cLog.pop();
+  if (!m.ok && m.err) toast(m.err, "err");
+  renderI2cLog();
+}
+function renderI2cLog() {
+  const box = $("#i2cLog");
+  if (!S.i2cLog.length) { box.replaceChildren(h("div", { class: "empty", style: "padding:16px" }, "Reads and writes show up here.")); return; }
+  box.replaceChildren(...S.i2cLog.map(({ time, m }) => {
+    const what = (m.op === "read" ? "READ " : "WRITE ") + "0x" + hex2(m.a) + (m.op === "read" ? (m.r >= 0 ? " reg 0x" + hex2(m.r) : "") + " ×" + m.n : " " + m.n + " byte" + (m.n === 1 ? "" : "s"));
+    let bytes;
+    if (!m.ok) bytes = m.err || "Failed";
+    else if (m.op === "read") {
+      const d = m.data || [];
+      bytes = d.map(hex2).join(" ") + "   " + d.map(b => b >= 32 && b < 127 ? String.fromCharCode(b) : "·").join("") + (d.length === 1 ? "   = " + d[0] + " dec, " + d[0].toString(2).padStart(8, "0") + " bin" : "");
+    } else bytes = "ACK. Write accepted.";
+    return h("div", { class: "entry" + (m.ok ? "" : " err") }, h("span", { class: "t" }, time), h("span", null, what), h("div", { class: "bytes" }, bytes));
+  }));
+}
+function setRw(addr, reg, len) {
+  $("#rwAddr").value = hex2(addr);
+  $("#rwReg").value = reg == null || reg < 0 ? "" : hex2(reg);
+  $("#rwLen").value = len || 1;
+  renderRwHint();
+}
+function renderRwHint() {
+  const a = parseHex($("#rwAddr").value, 0x7f), box = $("#rwHint");
+  const known = a != null ? KNOWN[a] : null;
+  if (!known) { box.replaceChildren(); return; }
+  const ids = known.filter(k => k[1] != null);
+  box.replaceChildren(h("p", { class: "hint" }, "0x" + hex2(a) + " is usually: " + known.map(k => k[0]).join(", ") + "."),
+    ids.length ? h("div", { class: "chips", style: "margin-top:8px" }, ids.map(k => h("button", { class: "chip", type: "button", title: "Expect " + k[3], onclick: () => { setRw(a, k[1], k[2]); doRead(); } }, "Read ID reg 0x" + hex2(k[1]) + " → expect " + k[3]))) : null);
+}
+function doRead() {
+  const a = parseHex($("#rwAddr").value, 0x77), regTxt = $("#rwReg").value.trim(), len = clamp(Math.round(+$("#rwLen").value || 1), 1, 32);
+  const reg = regTxt === "" ? -1 : parseHex(regTxt, 0xff);
+  if (a == null || a < 8) { toast("Address must be hex between 08 and 77, like 3C.", "err"); return; }
+  if (reg == null) { toast("Register must be hex 00–FF, or leave it blank.", "err"); return; }
+  i2cConfigIfNeeded();
+  cmd({ t: "i2c_read", a, r: reg, n: len });
+}
+function doWrite() {
+  const a = parseHex($("#rwAddr").value, 0x77), regTxt = $("#rwReg").value.trim();
+  if (a == null || a < 8) { toast("Address must be hex between 08 and 77, like 3C.", "err"); return; }
+  const parts = $("#rwBytes").value.trim().split(/[\s,]+/).filter(Boolean);
+  const bytes = [];
+  if (regTxt !== "") { const r = parseHex(regTxt, 0xff); if (r == null) { toast("Register must be hex 00–FF, or leave it blank.", "err"); return; } bytes.push(r); }
+  for (const p of parts) { const b = parseHex(p, 0xff); if (b == null) { toast("Couldn't read \"" + p + "\". Use hex bytes like 6B 00.", "err"); return; } bytes.push(b); }
+  if (!bytes.length || bytes.length > 32) { toast("Write needs 1–32 bytes (register first, then data).", "err"); return; }
+  i2cConfigIfNeeded();
+  cmd({ t: "i2c_write", a, b: bytes });
+}
+function renderI2c() {
+  const b = S.i2c, L = S.i2cLocal;
+  const tag = $("#busTag");
+  tag.textContent = b.on ? "On · SDA " + b.sda + " · SCL " + b.scl + " · " + (b.hz / 1000) + " kHz" : "Off";
+  tag.className = "tag" + (b.on ? " ok" : "");
+  setInput($("#sdaSel"), L.sda); setInput($("#sclSel"), L.scl);
+  $$("#speedSeg button").forEach(x => x.setAttribute("aria-pressed", String(+x.dataset.hz === L.hz)));
+  $("#releaseBtn").disabled = !b.on;
+  const sc = S.scan;
+  const health = $("#health");
+  if (!sc) health.replaceChildren(h("li", null, h("span", { class: "tag" }, "--"), h("span", { class: "muted" }, "Run a scan to check the wiring.")));
+  else if (!sc.bus) health.replaceChildren(h("li", null, h("span", { class: "tag bad" }, "ERR"), h("span", null, sc.err || "Scan failed.")));
+  else {
+    const bus = sc.bus, items = [];
+    const pulls = bus.pullSda && bus.pullScl;
+    items.push(h("li", null, h("span", { class: "tag " + (pulls ? "ok" : "warn") }, pulls ? "OK" : "CHECK"),
+      h("span", null, pulls ? "Pull-up resistors found on SDA and SCL." : "No external pull-ups on " + [!bus.pullSda && "SDA", !bus.pullScl && "SCL"].filter(Boolean).join(" and ") + ". The weak internal ones can work for short wires at 100 kHz. Add 4.7 kΩ to 3.3 V if reads fail.")));
+    items.push(h("li", null, h("span", { class: "tag " + (bus.sda ? "ok" : "bad") }, bus.sda ? "OK" : "LOW"),
+      h("span", null, bus.sda ? (bus.recovered ? "SDA was stuck low. Clocking SCL freed it." : "SDA idles high.") : "SDA is stuck low. A device may be holding it, or it's shorted to ground.")));
+    items.push(h("li", null, h("span", { class: "tag " + (bus.scl ? "ok" : "bad") }, bus.scl ? "OK" : "LOW"),
+      h("span", null, bus.scl ? "SCL idles high." : "SCL is stuck low. Check for a short to ground.")));
+    const n = (sc.found || []).length;
+    items.push(h("li", null, h("span", { class: "tag " + (n ? "ok" : "warn") }, n ? String(n) : "0"),
+      h("span", null, n ? n + " device" + (n === 1 ? "" : "s") + " answered." : "Nothing answered. Check power, GND, and that SDA/SCL aren't swapped.")));
+    health.replaceChildren(...items);
+  }
+  $("#scanMeta").textContent = sc && sc.ok ? "scanned in " + sc.ms + " ms · SDA " + sc.sda + " SCL " + sc.scl : "";
+  const found = new Set((sc && sc.found) || []);
+  const sel = parseHex($("#rwAddr").value, 0x7f);
+  const grid = $("#addrGrid");
+  const cells = [h("div", { class: "hx" })];
+  for (let c = 0; c < 16; c++) cells.push(h("div", { class: "hx" }, c.toString(16).toUpperCase()));
+  for (let r = 0; r < 8; r++) {
+    cells.push(h("div", { class: "rh" }, r.toString(16).toUpperCase() + "0"));
+    for (let c = 0; c < 16; c++) {
+      const a = r * 16 + c;
+      if (a < 8 || a > 0x77) { cells.push(h("div", { class: "cell rsv" }, "")); continue; }
+      if (found.has(a)) cells.push(h("button", { class: "cell hit", type: "button", "aria-pressed": String(sel === a), title: (KNOWN[a] ? KNOWN[a].map(k => k[0]).join(" / ") : "Unknown device"), onclick: () => { setRw(a, -1, 1); renderI2c(); } }, hex2(a)));
+      else cells.push(h("div", { class: "cell" }, sc ? "--" : "·"));
+    }
+  }
+  grid.replaceChildren(...cells);
+  const list = $("#devList");
+  if (!found.size) list.replaceChildren(h("div", { class: "empty" }, sc ? "No devices found on this bus." : "Scan the bus to list what's connected."));
+  else list.replaceChildren(...[...found].sort((x, y) => x - y).map(a => {
+    const k = KNOWN[a], idk = k && k.find(x => x[1] != null);
+    return h("div", { class: "dev" }, h("span", { class: "addr" }, "0x" + hex2(a)),
+      h("div", { class: "what" }, h("b", null, k ? k[0][0] : "Unknown device"), h("span", null, k && k.length > 1 ? "or " + k.slice(1).map(x => x[0]).join(", ") : k ? "Common at this address" : "Look up the address in your module's datasheet")),
+      idk ? h("button", { class: "btn sm", type: "button", onclick: () => { setRw(a, idk[1], idk[2]); doRead(); } }, "Read ID") : h("button", { class: "btn sm ghost", type: "button", onclick: () => { setRw(a, -1, 1); renderI2c(); } }, "Select"));
+  }));
+  if (!$("#i2cLog").children.length) renderI2cLog();
+}
+
+function prefillWifi() {
+  const net = S.info && S.info.net;
+  if (!net) return;
+  if (!$("#wifiSsid").value) $("#wifiSsid").value = net.saved || "";
+  if (!$("#wifiHost").value) $("#wifiHost").value = net.host || "benchbuddy";
+}
+function renderSystem() {
+  const i = S.info, s = S.sys;
+  const net = (s && s.net) || (i && i.net);
+  const kv = (pairs) => pairs.filter(Boolean).flatMap(([k, v]) => [h("dt", null, k), h("dd", null, v)]);
+  if (i) {
+    const rev = "v" + Math.floor(i.rev / 100) + "." + (i.rev % 100);
+    $("#devKv").replaceChildren(...kv([
+      ["Firmware", "BenchBuddy " + i.fw],
+      ["Built", i.build],
+      ["Chip", i.chip + " " + rev + " · " + i.cores + " cores · " + i.mhz + " MHz"],
+      ["Flash", fmtBytes(i.flash)],
+      ["PSRAM", fmtBytes(i.psram) + (s ? " (" + fmtBytes(s.psramFree) + " free)" : "")],
+      ["RAM free", s ? fmtBytes(s.heap) + " (lowest " + fmtBytes(s.heapMin) + ")" : "--"],
+      ["App size", i.sketch ? fmtBytes(i.sketch) + " of " + fmtBytes(i.sketchMax) : "--"],
+      ["Uptime", s ? fmtUp(s.up) : "--"],
+      ["Chip temp", s && typeof s.temp === "number" ? s.temp.toFixed(1) + " °C" : "--"],
+      ["Last reset", i.reset]
+    ]));
+  }
+  if (net) {
+    const hotspot = net.mode === "hotspot";
+    const q = typeof net.rssi === "number" ? (net.rssi >= -55 ? "excellent" : net.rssi >= -65 ? "good" : net.rssi >= -75 ? "fair" : "weak") : "";
+    $("#netKv").replaceChildren(...kv([
+      ["Mode", hotspot ? "Own hotspot" : net.mode === "connecting" ? "Reconnecting" : "Home WiFi"],
+      ["Network", net.ssid || "--"],
+      hotspot ? ["Hotspot password", "benchbuddy"] : null,
+      ["IP address", net.ip],
+      ["Web address", net.host + ".local"],
+      !hotspot && typeof net.rssi === "number" ? ["Signal", net.rssi + " dBm · " + q] : null,
+      !hotspot && net.ch ? ["Channel", String(net.ch)] : null,
+      hotspot && net.stations != null ? ["Devices on hotspot", String(net.stations)] : null,
+      ["MAC", net.mac],
+      ["Browsers open", s ? String(s.clients) : "--"]
+    ]));
+    const tag = $("#netTag");
+    tag.textContent = hotspot ? "Hotspot" : net.mode === "connecting" ? "Reconnecting" : "Home WiFi";
+    tag.className = "tag " + (hotspot ? "warn" : net.mode === "connecting" ? "warn" : "ok");
+    $("#wifiForgetBtn").disabled = !net.saved;
+  }
+  $("#fsToggle").checked = S.fs;
+  if (i) $$("#ledSeg button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.led === i.statusLed)));
+}
+function renderNets(list) {
+  const box = $("#netList");
+  if (!list) { box.replaceChildren(h("div", { class: "empty", style: "padding:16px" }, "Scanning…")); return; }
+  if (!list.length) { box.replaceChildren(h("div", { class: "empty", style: "padding:16px" }, "No networks found. Move closer to the router and scan again.")); return; }
+  const cur = $("#wifiSsid").value;
+  box.replaceChildren(...list.map(n => {
+    const lvl = n.rssi >= -55 ? 4 : n.rssi >= -65 ? 3 : n.rssi >= -75 ? 2 : 1;
+    const bars = h("span", { class: "bars", "aria-hidden": "true" }, [1, 2, 3, 4].map(i => h("b", { class: i <= lvl ? "on" : "" })));
+    return h("button", { class: "net-item", type: "button", "aria-pressed": String(n.ssid === cur), onclick: () => { $("#wifiSsid").value = n.ssid; renderNets(list); if (!n.open) $("#wifiPass").focus(); } },
+      bars, h("span", { class: "n" }, n.ssid), h("span", { class: "num faint", style: "font-size:12px" }, n.rssi + " dBm · ch " + n.ch), n.open ? h("span", { class: "tag warn" }, "open") : icon("lock"));
+  }));
+}
+async function scanWifi() {
+  const btn = $("#wifiScanBtn");
+  btn.disabled = true;
+  renderNets(null);
+  try {
+    let r = await api.get("/api/wifi/scan?fresh=1");
+    const until = Date.now() + 20000;
+    while (r.state === "scanning" && Date.now() < until) { await new Promise(res => setTimeout(res, 900)); r = await api.get("/api/wifi/scan"); }
+    if (r.state === "done") { S.wifiNets = r.nets; renderNets(r.nets); }
+    else { renderNets([]); toast(r.state === "error" ? "WiFi scan failed. Try again." : "WiFi scan took too long. Try again.", "err"); }
+  } catch (e) { renderNets([]); toast("Couldn't reach the board to scan.", "err"); }
+  btn.disabled = false;
+}
+function armConfirm(btn, label, action) {
+  if (btn.dataset.armed === "1") { btn.dataset.armed = "0"; btn.textContent = btn.dataset.orig; action(); return; }
+  btn.dataset.orig = btn.textContent; btn.dataset.armed = "1"; btn.textContent = label;
+  setTimeout(() => { if (btn.dataset.armed === "1") { btn.dataset.armed = "0"; btn.textContent = btn.dataset.orig; } }, 4000);
+}
+async function saveWifi() {
+  const ssid = $("#wifiSsid").value.trim(), pass = $("#wifiPass").value, host = $("#wifiHost").value.trim().toLowerCase();
+  if (!ssid || ssid.length > 32) { toast("Enter the network name (1–32 characters).", "err"); return; }
+  if (pass && (pass.length < 8 || pass.length > 63)) { toast("WiFi passwords are 8–63 characters. Leave it blank for an open network.", "err"); return; }
+  if (!/^[a-z0-9]([a-z0-9-]{0,29}[a-z0-9])?$/.test(host)) { toast("Device name: letters, numbers and dashes, up to 31 characters.", "err"); return; }
+  const btn = $("#wifiSaveBtn"); btn.disabled = true;
+  try {
+    const r = await api.post("/api/wifi", { ssid, pass, host });
+    if (!r.ok) { toast(r.err || "Couldn't save WiFi settings.", "err"); btn.disabled = false; return; }
+    if (S.mode === "demo") { toast("Demo: nothing was saved. On a real board it would restart and join " + ssid + ".", "info", 6000); btn.disabled = false; return; }
+    toast("Saved. BenchBuddy is restarting to join " + ssid + ". Put this phone or PC back on that network, then open http://" + host + ".local", "ok", 15000);
+  } catch (e) { toast("Couldn't reach the board.", "err"); }
+  btn.disabled = false;
+}
+function uploadOta() {
+  const f = $("#otaFile").files[0];
+  if (!f) return;
+  if (!/\.bin$/i.test(f.name)) { toast("Pick the firmware .bin file.", "err"); return; }
+  const bar = $("#otaBar"), txt = $("#otaText"), btn = $("#otaBtn");
+  btn.disabled = true;
+  if (S.mode === "demo") {
+    let p = 0;
+    const t = setInterval(() => { p += 7; bar.style.width = Math.min(p, 100) + "%"; txt.textContent = Math.min(p, 100) + "%"; if (p >= 100) { clearInterval(t); txt.textContent = "Demo: nothing was flashed."; btn.disabled = false; } }, 120);
+    return;
+  }
+  const fd = new FormData(); fd.append("firmware", f, f.name);
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", "/api/update");
+  xhr.upload.onprogress = e => { if (e.lengthComputable) { const p = Math.round(e.loaded / e.total * 100); bar.style.width = p + "%"; txt.textContent = p + "% of " + fmtBytes(e.total); } };
+  xhr.onload = () => {
+    let r = {}; try { r = JSON.parse(xhr.responseText); } catch (e) { }
+    if (xhr.status === 200 && r.ok) { bar.style.width = "100%"; txt.textContent = "Flashed. Restarting…"; toast("Update flashed. The board is restarting and this page will reconnect.", "ok", 9000); }
+    else { txt.textContent = "Failed"; toast("Update failed: " + (r.err || "HTTP " + xhr.status), "err", 9000); btn.disabled = false; }
+  };
+  xhr.onerror = () => { txt.textContent = "Failed"; toast("Upload interrupted. The board kept its old firmware.", "err"); btn.disabled = false; };
+  xhr.send(fd);
+}
+
+function bind() {
+  $$(".skin-btn, .skin-card").forEach(b => b.addEventListener("click", () => applySkin(b.dataset.skin)));
+  $$(".tab").forEach(t => t.addEventListener("click", () => setTab(t.dataset.tab, true)));
+  $(".tabs").addEventListener("keydown", e => {
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    const tabs = $$(".tab"), i = tabs.findIndex(t => t.dataset.tab === S.tab);
+    const n = tabs[(i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+    setTab(n.dataset.tab, true); n.focus();
+  });
+  const allOff = () => { if (cmd({ t: "alloff" })) toast("All outputs off.", "ok", 2500); };
+  $("#killBtn").addEventListener("click", allOff);
+  $("#allOffSmall").addEventListener("click", allOff);
+  $("#sheetBackdrop").addEventListener("click", closeSheet);
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); });
+  mqSheet.addEventListener ? mqSheet.addEventListener("change", () => { if (!mqSheet.matches) closeSheet(); }) : null;
+
+  $$("#winSeg button").forEach(b => b.addEventListener("click", () => { S.scope.win = +b.dataset.w; store("bb-win", String(S.scope.win)); renderScopeChrome(); scopeDirty = true; }));
+  $$("#scaleSeg button").forEach(b => b.addEventListener("click", () => { S.scope.scale = b.dataset.s; renderScopeChrome(); scopeDirty = true; }));
+  $("#rateSel").addEventListener("change", e => cmd({ t: "rate", hz: +e.target.value }));
+  $("#runBtn").addEventListener("click", () => {
+    S.scope.running = !S.scope.running;
+    if (!S.scope.running) S.scope.pausedAt = S.lastUp;
+    renderScopeChrome(); scopeDirty = true;
+  });
+  $("#clearBtn").addEventListener("click", () => { S.series.forEach(r => r.clear()); S.digital.clear(); scopeDirty = true; });
+  $("#csvBtn").addEventListener("click", exportCsv);
+  $("#scopeGoPins").addEventListener("click", () => setTab("pins", true));
+  const cv = $("#scope");
+  const hover = e => { const r = cv.getBoundingClientRect(); S.scope.hoverX = e.clientX - r.left; scopeDirty = true; };
+  cv.addEventListener("pointermove", hover);
+  cv.addEventListener("pointerdown", hover);
+  cv.addEventListener("pointerleave", () => { S.scope.hoverX = null; scopeDirty = true; });
+
+  $("#sdaSel").addEventListener("change", e => { S.i2cLocal.sda = +e.target.value; if (S.i2c.on) i2cConfigIfNeeded(); });
+  $("#sclSel").addEventListener("change", e => { S.i2cLocal.scl = +e.target.value; if (S.i2c.on) i2cConfigIfNeeded(); });
+  $$("#speedSeg button").forEach(b => b.addEventListener("click", () => { S.i2cLocal.hz = +b.dataset.hz; renderI2c(); if (S.i2c.on) i2cConfigIfNeeded(); }));
+  $("#scanBtn").addEventListener("click", () => {
+    if (S.i2cLocal.sda === S.i2cLocal.scl) { toast("SDA and SCL need to be different pins.", "err"); return; }
+    i2cConfigIfNeeded(); cmd({ t: "i2c_scan" });
+  });
+  $("#releaseBtn").addEventListener("click", () => { cmd({ t: "i2c_off" }); S.scan = null; renderI2c(); updateCounts(); });
+  $("#readBtn").addEventListener("click", doRead);
+  $("#writeBtn").addEventListener("click", doWrite);
+  $("#rwAddr").addEventListener("input", () => { renderRwHint(); });
+  $("#rwAddr").addEventListener("change", () => renderI2c());
+  ["#rwAddr", "#rwReg", "#rwLen"].forEach(s => $(s).addEventListener("keydown", e => { if (e.key === "Enter") doRead(); }));
+  $("#rwBytes").addEventListener("keydown", e => { if (e.key === "Enter") doWrite(); });
+
+  $("#fsToggle").addEventListener("change", e => cmd({ t: "failsafe", on: e.target.checked }));
+  $$("#ledSeg button").forEach(b => b.addEventListener("click", () => {
+    const pin = +b.dataset.led;
+    if (S.info && pin === S.info.statusLed) return;
+    if (S.selected === pin) { S.selected = null; renderInspector(true); }
+    cmd({ t: "led", pin });
+  }));
+  $("#wifiScanBtn").addEventListener("click", scanWifi);
+  $("#wifiSaveBtn").addEventListener("click", saveWifi);
+  $("#showPass").addEventListener("change", e => { $("#wifiPass").type = e.target.checked ? "text" : "password"; });
+  $("#wifiForgetBtn").addEventListener("click", e => armConfirm(e.currentTarget, "Tap again to forget", async () => {
+    const r = await api.post("/api/wifi/forget");
+    toast(S.mode === "demo" ? "Demo: nothing was changed." : r.ok ? "WiFi forgotten. BenchBuddy is restarting into its own hotspot." : "Couldn't forget WiFi.", r.ok ? "ok" : "err", 9000);
+  }));
+  $("#rebootBtn").addEventListener("click", e => armConfirm(e.currentTarget, "Tap again to restart", async () => {
+    const r = await api.post("/api/reboot");
+    toast(S.mode === "demo" ? "Demo: the simulated board keeps running." : r.ok ? "Restarting. This page reconnects by itself." : "Couldn't restart.", "ok", 6000);
+  }));
+  $("#otaFile").addEventListener("change", e => { $("#otaBtn").disabled = !e.target.files.length; $("#otaBar").style.width = "0"; $("#otaText").textContent = e.target.files[0] ? fmtBytes(e.target.files[0].size) : ""; });
+  $("#otaBtn").addEventListener("click", uploadOta);
+
+  window.addEventListener("resize", () => { measureTopbar(); scopeDirty = true; liveDirty = true; });
+  if (window.ResizeObserver) new ResizeObserver(measureTopbar).observe($("#topbar"));
+  window.addEventListener("hashchange", () => setTab(location.hash.slice(1), false));
+}
+
+let lastUi = 0, lastScope = 0;
+function frame(ts) {
+  if (liveDirty && ts - lastUi > 80) {
+    liveDirty = false; lastUi = ts;
+    renderBoard();
+    softInspector();
+    renderActiveLive();
+    if (S.tab === "scope") renderScopeLive();
+  }
+  if (S.tab === "scope" && scopeDirty && ts - lastScope > 33) {
+    scopeDirty = false; lastScope = ts;
+    drawScope();
+  }
+  requestAnimationFrame(frame);
+}
+
+function isDeviceHost() {
+  const host = location.hostname;
+  return /^(localhost|127\.\d+\.\d+\.\d+|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|\[?::1\]?)$/.test(host) || /\.local$/i.test(host) || /^[a-z0-9-]+$/i.test(host);
+}
+async function probeDevice() {
+  try {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 1500);
+    const r = await fetch("/api/info", { cache: "no-store", signal: ctl.signal });
+    clearTimeout(timer);
+    if (!r.ok) return false;
+    const j = await r.json();
+    return !!(j && j.fw && j.pins);
+  } catch (e) { return false; }
+}
+
+async function boot() {
+  applySkin(currentSkin());
+  const w = +store("bb-win");
+  if ([5, 10, 30, 60].includes(w)) S.scope.win = w;
+  bind();
+  buildBoard();
+  fillRates();
+  fillI2cSelects();
+  renderInspector(true);
+  renderActive();
+  renderScopeChrome();
+  renderI2c();
+  renderI2cLog();
+  measureTopbar();
+  const hash = location.hash.slice(1);
+  setTab(["pins", "scope", "i2c", "system"].includes(hash) ? hash : "pins", false);
+  requestAnimationFrame(frame);
+
+  const forceDemo = /[?&]demo\b/.test(location.search) || hash === "demo";
+  let live = false;
+  if (!forceDemo && /^https?:$/.test(location.protocol)) live = isDeviceHost() || await probeDevice();
+  if (live) {
+    S.mode = "connecting";
+    S.link = new WsLink(onMessage, setConn);
+  } else {
+    S.mode = "demo";
+    S.link = new SimLink(onMessage, setConn);
+  }
+}
+
+boot();
+})();
+</script>
+
