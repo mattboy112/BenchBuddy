@@ -6,7 +6,7 @@ The board hosts the page itself. No app, no cloud, no internet needed.
 
 ![BenchBuddy Dock](hardware/dock/renders/dock_3-4_view.png)
 
-> **Beta.** BenchBuddy is in private beta. Found a bug or have an idea? [Open an issue](../../issues/new/choose) or post it in the BenchBuddy channel on Discord.
+> **Beta.** BenchBuddy is in beta. Found a bug or have an idea? [Open an issue](../../issues/new/choose) or post it in the BenchBuddy channel on Discord.
 
 - **Current version:** v1.1.0 ([what changed](CHANGELOG.md))
 - **Board:** ESP32-S3 DevKitC-1 style, **N16R8** module (16 MB flash, 8 MB PSRAM)
