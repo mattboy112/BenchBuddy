@@ -64,7 +64,7 @@ BenchBuddy/
 ├─ scripts/embed_web.py  Packs web/ into src/web_assets.h on every build
 ├─ hardware/dock/        The 3D-printable dock: CadQuery source, STL/3MF/STEP, renders, 3D viewer
 ├─ docs/PROTOCOL.md      Messages the page and board send each other
-├─ media/               Promo video and the README preview
+├─ media/               Promo video and a short preview GIF
 └─ CHANGELOG.md          What changed in each version
 ```
 
