@@ -19,6 +19,7 @@ __pycache__/
 # Local-only files in Matt's working folder (not part of the repo)
 *.zip
 *.mp4
+!media/*.mp4
 Claude outputs/
 promo/
 BenchBuddy-v1.0.1/

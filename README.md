@@ -4,7 +4,9 @@ A wireless test bench for your ESP32-S3. Plug a sensor, LED, fan, servo or I2C m
 
 The board hosts the page itself. No app, no cloud, no internet needed.
 
-![BenchBuddy Dock](hardware/dock/renders/dock_3-4_view.png)
+[![BenchBuddy in action](media/BenchBuddy_preview.gif)](media/BenchBuddy_promo.mp4)
+
+▶ **[Watch the full video (1:32)](media/BenchBuddy_promo.mp4)**
 
 > **Beta.** BenchBuddy is in beta. Found a bug or have an idea? [Open an issue](../../issues/new/choose) or post it in the BenchBuddy channel on Discord.
 
@@ -64,6 +66,7 @@ BenchBuddy/
 ├─ scripts/embed_web.py  Packs web/ into src/web_assets.h on every build
 ├─ hardware/dock/        The 3D-printable dock: CadQuery source, STL/3MF/STEP, renders, 3D viewer
 ├─ docs/PROTOCOL.md      Messages the page and board send each other
+├─ media/               Promo video and the README preview
 └─ CHANGELOG.md          What changed in each version
 ```
 

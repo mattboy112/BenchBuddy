@@ -6,5 +6,7 @@
 *.3mf   binary
 *.stl   binary
 *.bin   binary
+*.gif   binary
+*.mp4   binary
 *.step  -diff
 hardware/dock/viewer/BenchBuddy_Dock_viewer.html -diff
