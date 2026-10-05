@@ -3,6 +3,10 @@ description: Something you'd like BenchBuddy to do
 title: "[Idea] "
 labels: ["enhancement"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Ideas are welcome here or in **#bug-reports** on the [Printer's Paradise Discord](https://discord.gg/TCZUpKpJy4).
   - type: textarea
     id: idea
     attributes:
